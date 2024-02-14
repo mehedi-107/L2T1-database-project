@@ -1,0 +1,23 @@
+/* DoctorCard.css */
+
+.doctor-card {
+    display: flex;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px;
+  }
+  
+  .doctor-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 20px;
+  }
+  
+  .doctor-details {
+    flex-grow: 1;
+  }
+  
+  /* Add additional styling as needed */
+  

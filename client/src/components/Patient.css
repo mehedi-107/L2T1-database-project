@@ -1,0 +1,123 @@
+/* Patient.css */
+.patient-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.logo img {
+  max-height: 80px;
+}
+
+nav button {
+  margin-left: 20px;
+  background-color: transparent;
+  border: none;
+  color: #2c3e50; /* Dark Blue */
+  font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.3s ease-in-out;
+}
+
+nav button:hover {
+  color: #3498db; /* Highlight Blue on hover */
+}
+
+main {
+  padding: 20px 0;
+}
+
+.patient-info-container {
+  text-align: center;
+}
+
+.patient-details {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.patient-details p {
+  margin: 10px 0;
+}
+
+.actions {
+  margin-top: 20px;
+}
+
+.actions button {
+  padding: 10px 20px;
+  background-color: #3498db; /* Highlight Blue */
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.actions button:hover {
+  background-color: #2980b9; /* Darker Highlight Blue on hover */
+}
+
+.appointments-section {
+  margin-top: 40px;
+}
+
+.appointment {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.appointment p {
+  margin: 5px 0;
+}
+
+.schedule-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #2ecc71; /* Green */
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.schedule-button:hover {
+  background-color: #27ae60; /* Darker Green on hover */
+}
+
+.notification {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #e74c3c; /* Red */
+  color: #fff;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.footer p {
+  font-size: 0.8rem;
+  color: #888;
+}

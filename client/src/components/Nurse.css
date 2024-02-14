@@ -1,0 +1,39 @@
+/* Nurse.css */
+.nurse-container {
+    border: 2px solid #3498db;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 10px;
+    background-color: #ecf0f1;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nurse-container h2 {
+    color: #3498db;
+  }
+  
+  .nurse-container p {
+    margin: 8px 0;
+  }
+  
+  .nurse-container button {
+    background-color: #3498db;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+  }
+  
+  .nurse-container button:hover {
+    background-color: #2980b9;
+  }
+  
+  .additional-details {
+    margin-top: 20px;
+  }
+  
+  /* Add more styles as needed */
+  
