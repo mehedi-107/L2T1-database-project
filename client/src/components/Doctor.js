@@ -1,69 +1,31 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './Doctor.css';
+import image1 from '../assets/logo2.png';
+import TaskList from './TaskList';
 
 const Doctor = ({ userData }) => {
+  console.log("userData", userData);
   const [showPopup, setShowPopup] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changePasswordError, setChangePasswordError] = useState(null);
 
-  const navigate = useNavigate();
-
   const handleChangePassword = () => {
     setShowPopup(true);
   };
 
-  const handleAppointmentsClick = () => {
-    navigate('/appointments');
+  const handleUpdateProfileClick = () => {
+    console.log('Update Profile');
   };
 
-  const handleTaskListClick = () => {
-    console.log('View Task List');
+  const handleLogout = () => {
+    window.location.href = '/';
   };
 
-  const handleEmergencyAlertsClick = () => {
-    console.log('View Emergency Alerts');
-  };
-
-  const handleScheduleManagementClick = () => {
-    console.log('Manage Schedule');
-  };
-
-  const handleFeedbackAndReviewsClick = () => {
-    console.log('View Feedback and Reviews');
-  };
-
-  const handleSavePassword = async () => {
-    if (newPassword === confirmPassword) {
-      try {
-        const response = await fetch('http://localhost:5000/changePassword', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userID: userData.user.ID,
-            currentPassword,
-            newPassword,
-          }),
-        });
-        if (response.ok) {
-          setShowPopup(false);
-          setCurrentPassword('');
-          setNewPassword('');
-          setConfirmPassword('');
-        } else {
-          setChangePasswordError('Failed to change password. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error occurred:', error);
-        setChangePasswordError('An error occurred. Please try again later.');
-      }
-    } else {
-      setChangePasswordError('Passwords do not match.');
-    }
+  const handleSavePassword = () => {
+    // Implementation for saving password
   };
 
   const handleDiscardChanges = () => {
@@ -73,12 +35,60 @@ const Doctor = ({ userData }) => {
     setConfirmPassword('');
     setChangePasswordError(null);
   };
-  const handleLogout = () => {
-    navigate('/');
-  }
 
   return (
     <div className="doctor-container">
+      <header className="doctor-header">
+        <div className="logo">
+          <img src={image1} alt="Health Harbor Logo" />
+        </div>
+        <nav className="navbar">
+          <ul>
+            <li><Link to="/appointments">Appointments</Link></li>
+            <li><Link to="/Tasklist" state={userData}>Task List</Link></li> {/* Pass doctorInfo as state */}
+            <li><Link to="/schedule">Manage Schedule</Link></li>
+            <li><Link to="/feedback">Feedback & Reviews</Link></li>
+            <li className="dropdown">
+              <button className="dropbtn">More</button>
+              <div className="dropdown-content">
+                <button onClick={handleChangePassword}>Change Password</button>
+                <button onClick={handleUpdateProfileClick}>Update Profile</button>
+                <button onClick={handleLogout}>Logout</button>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
+      {/* Popup */}
+      {showPopup && (
+        <div className="popup">
+          <h3>Change Password</h3>
+          <input
+            type="password"
+            placeholder="Current Password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Confirm New Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <button onClick={handleSavePassword}>Save</button>
+          <button onClick={handleDiscardChanges}>Discard</button>
+          {changePasswordError && <p className="error-msg">{changePasswordError}</p>}
+        </div>
+      )}
+
+      {/* Doctor Info */}
       <div className="doctor-info">
         <div className="profile-picture">
           <img src="https://via.placeholder.com/150" alt="Profile" />
@@ -120,61 +130,42 @@ const Doctor = ({ userData }) => {
         </div>
       </div>
 
-      <div className="button-container">
-        <button className="appointment-btn" onClick={handleAppointmentsClick}>
-          Appointments
-        </button>
-        <button className="change-password-btn" onClick={handleChangePassword}>
-          Change Password
-        </button>
-      </div>
-
-      {showPopup && (
-        <div className="popup">
-          <h3>Change Password</h3>
-          <input
-            type="password"
-            placeholder="Current Password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="New Password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Confirm New Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          <button onClick={handleSavePassword}>Save</button>
-          <button onClick={handleDiscardChanges}>Discard</button>
-          {changePasswordError && <p className="error-msg">{changePasswordError}</p>}
+      {/* Additional Content */}
+      <div className="doctor-content">
+        <h2>Our Services</h2>
+        <p>At Health Harbor, we provide comprehensive medical services to ensure your well-being.</p>
+        <div className="service-list">
+          <div className="service-item">
+            <img src="service1.jpg" alt="Service 1" />
+            <h3>Primary Care</h3>
+            <p>Our primary care physicians offer preventive care, health screenings, and treatment for common illnesses.</p>
+          </div>
+          <div className="service-item">
+            <img src="service2.jpg" alt="Service 2" />
+            <h3>Specialized Care</h3>
+            <p>We have specialists in various fields including cardiology, orthopedics, neurology, and more.</p>
+          </div>
+          <div className="service-item">
+            <img src="service3.jpg" alt="Service 3" />
+            <h3>Emergency Care</h3>
+            <p>Our emergency department is equipped to handle medical emergencies 24/7.</p>
+          </div>
         </div>
-      )}
-
-      <div className="additional-features">
-        <button className="task-list-btn" onClick={handleTaskListClick}>
-          View Task List
-        </button>
-        <button className="emergency-alerts-btn" onClick={handleEmergencyAlertsClick}>
-          View Emergency Alerts
-        </button>
-        <button className="schedule-management-btn" onClick={handleScheduleManagementClick}>
-          Manage Schedule
-        </button>
-        <button className="feedback-reviews-btn" onClick={handleFeedbackAndReviewsClick}>
-          View Feedback and Reviews
-        </button>
+        <h2>Our Motto</h2>
+        <p>Our motto is to provide compassionate care with a focus on patient safety and satisfaction.</p>
       </div>
 
+      {/* Logout Button */}
       <div className="logout-btn">
         <button onClick={handleLogout}>Logout</button>
       </div>
+      <footer className="footer">
+        <p>&copy; 2021 Health Harbor</p>
+      </footer>
+
+
     </div>
+    
   );
 };
 

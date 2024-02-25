@@ -2,63 +2,82 @@
 
 /* Container Styles */
 .doctor-container {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  animation: fadeInUp 0.8s ease-in-out;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* Header Styles */
-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-header h1 {
-  color: #333;
-}
-
-/* Profile Section Styles */
-.doctor-info {
+.doctor-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
+  padding: 20px;
 }
 
-.profile-picture img {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
+.doctor-header .logo img {
+  height: 60px;
+}
+
+.doctor-header nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.doctor-header nav ul li {
   margin-right: 20px;
 }
 
-.personal-details {
-  color: #555;
+.doctor-header nav ul li:last-child {
+  margin-right: 0;
 }
 
-/* Button Container Styles */
-.button-container {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.appointment-btn,
-.change-password-btn {
-  background-color: #e50914;
-  color: #fff;
-  border: none;
+.doctor-header nav ul li a,
+.doctor-header nav ul li button {
   padding: 10px 20px;
+  border: none;
+  background-color: transparent;
+  color: #333;
+  font-size: 16px;
+  text-decoration: none;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease-in-out;
 }
 
-.appointment-btn:hover,
-.change-password-btn:hover {
-  background-color: #b20710;
+.doctor-header nav ul li a:hover,
+.doctor-header nav ul li button:hover {
+  color: #14dfbe;
+}
+
+/* Dropdown Styles */
+.dropdown {
+  position: relative;
+  font-weight: bold;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content button {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content button:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
 }
 
 /* Popup Styles */
@@ -98,33 +117,29 @@ header h1 {
   margin-top: 10px;
 }
 
-/* Additional Features Styles */
-.additional-features {
+/* Doctor Info Styles */
+.doctor-info {
   display: flex;
-  flex-wrap: wrap;
-  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-.task-list-btn,
-.emergency-alerts-btn,
-.schedule-management-btn,
-.feedback-reviews-btn {
-  background-color: #3498db;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease-in-out;
-  margin-right: 10px;
+.profile-picture img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-right: 20px;
+}
+
+.personal-details {
+  color: #555;
+}
+
+.info-item {
   margin-bottom: 10px;
 }
 
-.task-list-btn:hover,
-.emergency-alerts-btn:hover,
-.schedule-management-btn:hover,
-.feedback-reviews-btn:hover {
-  background-color: #2980b9;
+.info-label {
+  font-weight: bold;
 }
 
 /* Logout Button Styles */
@@ -152,5 +167,9 @@ footer {
   margin-top: 20px;
   text-align: center;
   color: #888;
-  animation: fadeInUp 0.8s ease-in-out;
+}
+
+footer p {
+  margin: 0;
+  padding: 20px 0;
 }

@@ -5,7 +5,7 @@
   padding: 20px;
 }
 
-header {
+header.homeHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;

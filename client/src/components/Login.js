@@ -43,7 +43,7 @@ const Login = ({ onLoginSuccess }) => {
       <div className="form-group">
         <input
           type="text"
-          className="form-control"
+          className="form-control-login"
           placeholder="Username or Email"
           value={userID}
           onChange={(e) => setUserID(e.target.value)}

@@ -10,7 +10,8 @@ import Doctor from './components/Doctor';
 import Appointments from './components/Appointments';
 import Patient from './components/Patient';
 import Nurse from './components/Nurse';
-
+import TaskList from './components/TaskList';
+import BedInfo from './components/ward/BedInfo';
 function App() {
   // Load isLoggedIn and userData from local storage on component mount
   useEffect(() => {
@@ -101,6 +102,9 @@ function App() {
           }
         />
         <Route path="/" element={<Home />} />
+      
+      <Route path="/tasklist" element={<TaskList userData={userData}/>} />
+      <Route path="/BedInfo" element={<BedInfo />} />
       </Routes>
     </Router>
   );

@@ -11,6 +11,21 @@ app.listen(5000, () => {
   console.log("Server has started on port 5000");
 });
 
+app.get('/doctors', async (req, res) => {
+  try {
+    // Query the database to fetch doctors' data
+    const doctors = await pool.query('SELECT * FROM "DOCTORS"'); // Adjust SQL query according to your database schema
+    console.log(doctors.rows);
+    // Send the fetched doctors' data as JSON response
+    res.json(doctors.rows);
+  } catch (error) {
+    // Handle errors if any
+    console.error('Error fetching doctors:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
 app.post("/login", async (req, res) => {
   // ... (copy your login route from index.js)
   try {
@@ -287,69 +302,58 @@ app.get('/doctors', async (req, res) => {
   }
 });
 
-
-
-
-
 app.get('/availableTimeSlots', async (req, res) => {
   try {
-      const { doctor } = req.query;
+    const { doctor, date } = req.query;
 
-      // Get the current date
-      const currentDate = new Date();
+    // Calculate the start and end time based on the doctor's ID
+    let startTime = '08:00:00';
+    let endTime = '12:00:00';
+    if (doctor > 10100) {
+      startTime = '18:00:00';
+      endTime = '22:00:00';
+    }
 
-      // Generate time slots for the upcoming 7 days
-      const availableTimeSlots = [];
+    // Query to fetch occupied time slots for a specific date and doctor
+    const query = `
+      SELECT "START_TIME" 
+      FROM "APPOINTMENT"
+      WHERE "DOCTOR_ID" = $1 
+      AND "APPOINTMENT_DATE" = $2
+      ORDER BY "START_TIME";
+    `;
 
-      for (let i = 0; i < 3; i++) {
-          const currentDateFormatted = format(addDays(currentDate, i), 'yyyy-MM-dd');
+    const result = await pool.query(query, [doctor, date]);
 
-          // Calculate the time range for the given doctor
-          
-          let startTime = '08:00:00';
-          let endTime = '12:00:00';
-          if(doctor >10100){
-            startTime = '18:00:00';
-            endTime = '22:00:00';
-          }
+    const occupiedTimeSlots = new Set(result.rows.map(row => row.START_TIME));
 
-          // Query to fetch occupied time slots for a specific date and doctor
-          const query = `
-              SELECT "START_TIME" FROM "APPOINTMENT"
-              WHERE "DOCTOR_ID" = $1 AND "APPOINTMENT_DATE" = $2
-              ORDER BY "START_TIME";
-          `;
+    // Generate available time slots within the specified time range
+    const availableTimeSlots = [];
+    let currentTime = new Date(`${date} ${startTime}`);
 
-          const result = await pool.query(query, [doctor, currentDateFormatted]);
+    while (currentTime < new Date(`${date} ${endTime}`)) {
+      const timeSlot = format(currentTime, 'HH:mm:ss');
 
-          const occupiedTimeSlots = new Set(result.rows.map(row => row.START_TIME));
+      if (!occupiedTimeSlots.has(timeSlot)) {
+        // Include both date and time in the response
+        const dateTimeSlot = {
+          date,
+          time: timeSlot,
+        };
 
-          // Generate available time slots within the specified time range
-          let currentTime = new Date(`${currentDateFormatted} ${startTime}`);
-
-          while (currentTime < new Date(`${currentDateFormatted} ${endTime}`)) {
-              const timeSlot = format(currentTime, 'HH:mm:ss');
-
-              if (!occupiedTimeSlots.has(timeSlot)) {
-                  // Include both date and time in the response
-                  const dateTimeSlot = {
-                      date: format(currentTime, 'yyyy-MM-dd'),
-                      time: timeSlot,
-                  };
-
-                  availableTimeSlots.push(dateTimeSlot);
-              }
-
-              currentTime = addMinutes(currentTime, 15);
-          }
+        availableTimeSlots.push(dateTimeSlot);
       }
 
-      res.json(availableTimeSlots);
+      currentTime = addMinutes(currentTime, 15);
+    }
+
+    res.json(availableTimeSlots);
   } catch (error) {
-      console.error('Error fetching available time slots:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error fetching available time slots:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 
 
@@ -357,13 +361,16 @@ app.post('/submitAppointment', async (req, res) => {
   try {
     const { doctor, time, date, patientId } = req.body;
 
+    console.log('Received appointment data:', req.body);
     // Step 1: Select the highest appointment ID
-    const selectMaxAppointmentIdQuery = `
-      SELECT MAX("APPOINTMENT_ID") as max_id FROM "APPOINTMENT";
+    const selectMaxAppointmentIdQueryFromMedicalRecord = `
+      SELECT MAX("APPOINTMENT_ID") as max_id FROM "MEDICAL_RECORD_PATIENT";
     `;
 
-    const maxIdResult = await pool.query(selectMaxAppointmentIdQuery);
-    const nextAppointmentId = maxIdResult.rows[0].max_id + 1;
+    const maxIdResultFromMedicalRecord = await pool.query(selectMaxAppointmentIdQueryFromMedicalRecord);
+
+    console.log(maxIdResultFromMedicalRecord.rows[0].max_id);
+    const nextAppointmentId = maxIdResultFromMedicalRecord.rows[0].max_id + 1;
 
     // Step 2: Insert the new appointment with the calculated ID
     const insertAppointmentQuery = `
@@ -373,10 +380,203 @@ app.post('/submitAppointment', async (req, res) => {
     `;
 
     const result = await pool.query(insertAppointmentQuery, [nextAppointmentId, doctor, date, time, patientId]);
-
+    
     res.json({ success: true, appointment: result.rows[0] });
   } catch (error) {
     console.error('Error submitting appointment:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+app.post('/markCompleted', async (req, res) => {
+  try {
+    const { appointmentId, result } = req.body;
+
+    console.log('Received appointment ID:', appointmentId);
+    console.log('Received result:', result);
+
+    // Update the APPOINTMENT table to mark the appointment as completed
+
+    // Update the MEDICAL_RECORD_PATIENT table with the result and current date
+    await pool.query('UPDATE "MEDICAL_RECORD_PATIENT" SET "RESULT" = $2, "SERVICE_DATE" = CURRENT_DATE WHERE "APPOINTMENT_ID" = $1', [appointmentId, result]);
+
+    // Here, you can handle saving the result to your database as well if needed.
+    // For example, if you have a separate table to store appointment results, you can insert the result there.
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error marking appointment as completed:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+app.get('/doctorWardDuty', async (req, res) => {
+  try {
+      // Extract the doctorId from the query parameters
+      const { doctorId } = req.query;
+      console.log(doctorId);
+      // Construct the SQL query to fetch ward duty information for the specified doctorId
+      const query = `
+          SELECT *
+          FROM "WARD"
+          WHERE "DOCTOR_ID_DAY" = $1 OR "DOCTOR_ID_NIGHT" = $1;
+      `;
+
+      // Execute the SQL query with the specified doctorId
+      const { rows } = await pool.query(query, [doctorId]);
+      console.log(rows);
+      // Send the fetched data as JSON response
+      res.json(rows);
+  } catch (error) {
+      // Handle errors
+      console.error('Error fetching ward duty info:', error);
+      res.status(500).json({ error: 'An error occurred while fetching ward duty info' });
+  }
+});
+
+app.get('/patientHistory', async (req, res) => {
+  try {
+    // Extract the patientId from the query parameters
+    const { patientId } = req.query;
+    console.log(patientId);
+    // Construct the SQL query to fetch patient history from WARD_HISTORY
+    const bedColumns = Array.from({ length: 10 }, (_, i) => `"BED_${i + 1}" = $1`).join(' OR ');
+    const query = `
+      SELECT *
+      FROM "WARD_HISTORY" JOIN "DOCTORS" ON "DOCTOR_ID_DAY" = "DOCTOR_ID",
+      WHERE ${bedColumns};
+    `;
+
+    // Execute the SQL query with the specified patientId
+    const { rows } = await pool.query(query, [patientId]);
+
+    // Send the fetched data as JSON response
+    res.json(rows);
+  } catch (error) {
+    // Handle errors
+    console.error('Error fetching patient history:', error);
+    res.status(500).json({ error: 'An error occurred while fetching patient history' });
+  }
+});
+
+app.get('/nurseInfo', async (req, res) => {
+  try {
+    // Extract the nurseId from the query parameters
+    const { nurseId } = req.query;
+
+    // Construct the SQL query to fetch nurse information
+    const query = `
+      SELECT N.*, D.*, W.*
+      FROM "NURSES" N
+      LEFT JOIN "DEPARTMENTS" D ON N."DEPT_ID" = D."DEPARTMENT_ID"
+      LEFT JOIN "WARD_HISTORY" W ON 
+        W."NURSE_ID_1" = N."NURSE_ID" OR
+        W."NURSE_ID_2" = N."NURSE_ID" OR
+        W."NURSE_ID_3" = N."NURSE_ID" OR
+        W."NURSE_ID_4" = N."NURSE_ID"
+      WHERE N."NURSE_ID" = $1;
+    `;
+
+    // Execute the SQL query with the specified nurseId
+    const { rows } = await pool.query(query, [nurseId]);
+
+    // Send the fetched data as JSON response
+    res.json(rows);
+  } catch (error) {
+    // Handle errors
+    console.error('Error fetching nurse information:', error);
+    res.status(500).json({ error: 'An error occurred while fetching nurse information' });
+  }
+});
+
+app.get('/wardInfo', async (req, res) => {
+  try {
+      const { date } = req.query;
+      const query = `
+          SELECT *
+          FROM "WARD_HISTORY"
+          WHERE "DATE" = $1;
+      `;
+      const { rows } = await pool.query(query, [date]);
+      res.json(rows);
+  } catch (error) {
+      console.error('Error fetching ward information:', error);
+      res.status(500).json({ error: 'An error occurred while fetching ward information' });
+  }
+});
+
+app.get('/doctorRecentActivitiesInWard', async (req, res) => {
+  try {
+    const { doctor_id,interval } = req.query;
+    console.log(req.query); // Log received parameters for debugging
+
+    // Call the getDoctorActivitiesInWard function
+    const query = `
+      SELECT * FROM getDoctorActivitiesInWard($1, $2)
+    `;
+    const { rows } = await pool.query(query, [doctor_id, interval]);
+
+    // Send the response
+    res.json(rows);
+  } catch (error) {
+    console.error('Error executing query:', error);
+    res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
+});
+
+app.get('/doctorRecentActivitiesInCabin', async (req, res) => {
+  try {
+    const { doctor_id,interval } = req.query;
+    console.log(req.query); // Log received parameters for debugging
+    
+    // Call the getdoctoractivitiesincabin function
+    const query = `
+      SELECT * FROM getdoctoractivitiesincabin($1, $2)
+    `;
+    const { rows } = await pool.query(query, [doctor_id, interval]);
+    console.log(rows);
+    // Send the response
+    res.json(rows);
+  } catch (error) {
+    console.error('Error executing query:', error);
+    res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

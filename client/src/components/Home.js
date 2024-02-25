@@ -7,7 +7,7 @@ import image1 from '../assets/logo2.png'
 const Home = () => {
   return (
     <div className="home-container">
-      <header>
+      <header className='homeHeader'>
         <div className="logo">
 
           <img src={image1} alt="Health Harbor Logo" />  

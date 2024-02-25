@@ -14,7 +14,7 @@
 
 .login-content {
   position: relative;
-  width: 450px;
+  width: 350px;
   padding: 40px;
   border-radius: 30px;
   background-color: rgba(0, 0, 0, 0.8);
@@ -29,11 +29,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #333;
+  color: #ffffff;
 }
 
-h1 {
-  color: #fff;
+h2.login-heading {
+  color: #ffffff;
   margin-bottom: 20px;
   font-size: 2.5rem;
 }
@@ -46,7 +46,7 @@ h1 {
   border-radius: 8px;
 }
 
-.form-control {
+.form-control-login {
   width: 100%;
   padding: 15px;
   border: none;
@@ -117,4 +117,19 @@ h1 {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+button.btn-link-signup{
+  background-color: #e50914;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  font-size: 1.2rem;
+  margin-top: 20px;
+}
+
+button.btn-link-signup:hover {
+  background-color: #b20710;
 }

@@ -1,7 +1,7 @@
 // AppointmentForm.js
 import React, { useState, useEffect } from 'react';
 
-const AppointmentForm = ({ handleClose, handleSubmit,userData }) => {
+const AppointmentForm = ({userData }) => {
     const [selectedDepartment, setSelectedDepartment] = useState('');
     const [selectedDoctor, setSelectedDoctor] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
@@ -104,9 +104,6 @@ const AppointmentForm = ({ handleClose, handleSubmit,userData }) => {
         } catch (error) {
           console.error('Error submitting appointment:', error);
         }
-      
-        // Close the form
-        handleClose();
       };
       
 
