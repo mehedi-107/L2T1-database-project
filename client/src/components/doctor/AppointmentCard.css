@@ -1,0 +1,87 @@
+.appointment-card {
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.appointment-card p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.appointment-card b {
+  color: #333;
+}
+
+.appointment-card label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.appointment-card input[type='checkbox'] {
+  margin-right: 5px;
+}
+
+.appointment-card textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical; /* Allow vertical resizing */
+}
+
+.appointment-card button {
+  padding: 10px 20px;
+  margin-right: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.appointment-card button:hover {
+  background-color: #0056b3;
+}
+
+.appointment-card button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.appointment-card .error {
+  color: red;
+  margin-top: 5px;
+}
+
+.appointment-card .details-toggle {
+  margin-top: 10px;
+  background-color: #eee;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.appointment-card .details-toggle:hover {
+  background-color: #ddd;
+}
+
+.appointment-card .details-toggle:focus {
+  outline: none;
+}

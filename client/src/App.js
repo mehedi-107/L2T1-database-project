@@ -6,12 +6,14 @@ import './App.css';
 import Home from './components/Home';
 import Login from './components/Login';
 import Signup from './components/Signup';
-import Doctor from './components/Doctor';
-import Appointments from './components/Appointments';
-import Patient from './components/Patient';
-import Nurse from './components/Nurse';
-import TaskList from './components/TaskList';
+import Doctor from './components/doctor/Doctor';
+import Appointments from './components/doctor/Appointments';
+import Patient from './components/patient/Patient';
+import Nurse from './components/nurse/Nurse';
+import TaskList from './components/doctor/TaskList';
 import BedInfo from './components/ward/BedInfo';
+import Admin from './components/admin/Admin';
+import BedInfoAdmin from './components/admin/BedInfoAdmin';
 function App() {
   // Load isLoggedIn and userData from local storage on component mount
   useEffect(() => {
@@ -105,6 +107,8 @@ function App() {
       
       <Route path="/tasklist" element={<TaskList userData={userData}/>} />
       <Route path="/BedInfo" element={<BedInfo />} />
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/bedInfoAdmin" element={<BedInfoAdmin />} />
       </Routes>
     </Router>
   );

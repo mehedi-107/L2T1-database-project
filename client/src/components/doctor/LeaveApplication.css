@@ -1,0 +1,47 @@
+.leave-application-container {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .leave-application-container h2 {
+    margin-bottom: 20px;
+  }
+  
+  .leave-application-container form div {
+    margin-bottom: 15px;
+  }
+  
+  .leave-application-container form label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .leave-application-container form input[type="date"],
+  .leave-application-container form textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .leave-application-container form textarea {
+    resize: vertical; /* Allow vertical resizing of textarea */
+  }
+  
+  .leave-application-container form button[type="submit"] {
+    background-color: #007bff; /* Button color */
+    color: #fff; /* Text color */
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .leave-application-container form button[type="submit"]:hover {
+    background-color: #0056b3; /* Hover color */
+  }
+  
+  .leave-application-container .error-message {
+    color: red;
+  }
+  

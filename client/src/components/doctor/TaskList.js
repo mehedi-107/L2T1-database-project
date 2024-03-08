@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import WardDuty from './WardDuty';
 import CabinDuty from './CabinDuty'
-import OperationTheatreDuty from './OperationTheatreDuty';
+import OperationTheatreDuty from '../OperationTheatreDuty';
 import './TaskList.css';  
 const TaskList = (doctor) => {
   const [selectedOption, setSelectedOption] = useState('ward'); // Default option
@@ -26,12 +26,13 @@ const TaskList = (doctor) => {
           {/* Add your logo here */}
         </div>
         <nav className="navbar">
-          <ul>
-            <li onClick={() => setSelectedOption('ward')}>Ward Duty</li>
-            <li onClick={() => setSelectedOption('cabin')}>Cabin Duty</li>
-            <li onClick={() => setSelectedOption('theatre')}>Operation Theatre Duty</li>
-          </ul>
-        </nav>
+  <ul>
+    <li className="nav-item" onClick={() => setSelectedOption('ward')}>Ward Duty</li>
+    <li className="nav-item" onClick={() => setSelectedOption('cabin')}>Cabin Duty</li>
+    <li className="nav-item" onClick={() => setSelectedOption('theatre')}>OT Duty</li>
+  </ul>
+</nav>
+
       </header>
 
       {/* Render the selected duty component */}

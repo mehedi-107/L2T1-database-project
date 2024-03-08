@@ -1,4 +1,5 @@
 /* Patient.css */
+
 .patient-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -9,15 +10,25 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 40px 250px; 
+  padding: 20px 40px; /* Reduce padding */
 }
 
 .logo img {
-  max-height: 80px;
+  max-height: 60px; /* Reduce logo size */
+}
+
+nav ul {
+  list-style-type: none; /* Remove bullet points */
+  margin: 0;
+  padding: 0;
+}
+
+nav ul li {
+  display: inline;
+  margin-right: 20px; /* Adjust spacing */
 }
 
 nav a {
-  margin-left: 20px;
   text-decoration: none;
   color: #2c3e50; /* Dark Blue */
   font-weight: bold;
@@ -58,27 +69,26 @@ nav a:hover {
   padding: 20px 0;
 }
 
-.appointments table, .cabins table, .wards table {
+table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.appointments th, .cabins th, .wards th {
-  background-color: #f2f2f2;
-  padding: 10px;
-  text-align: left;
-}
-
-.appointments td, .cabins td, .wards td {
+th, td {
   padding: 10px;
   border-bottom: 1px solid #ddd;
 }
 
-.appointments tr:nth-child(even), .cabins tr:nth-child(even), .wards tr:nth-child(even) {
+th {
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+tr:nth-child(even) {
   background-color: #f2f2f2;
 }
 
-.appointments tr:hover, .cabins tr:hover, .wards tr:hover {
+tr:hover {
   background-color: #ddd;
 }
 

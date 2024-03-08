@@ -1,0 +1,111 @@
+/* Define styles for the ward-card container */
+.ward-card {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  /* Define styles for headings */
+  .ward-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .ward-card h4 {
+    font-size: 1.2rem;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  
+  /* Define styles for input and buttons */
+  .ward-card input[type="text"],
+  .ward-card button {
+    padding: 10px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  
+  .ward-card input[type="text"] {
+    width: 200px;
+  }
+  
+  .ward-card button {
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .ward-card button:hover {
+    background-color: #0056b3;
+  }
+  
+/* Define styles for bed container */
+/* Define styles for bed container */
+.beds-container1 {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .left-beds1,
+  .right-beds1 {
+    flex: 1;
+
+  }
+  
+  .left-beds {
+    margin-right: 10px; /* Adjust as needed */
+  }
+  
+  .right-beds {
+    margin-left: 10px; /* Adjust as needed */
+  }
+  
+  /* Define styles for bed cards */
+
+  
+  /* Define styles for bed cards */
+  .bed-card {
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .bed-card p {
+    margin: 5px 0;
+  }
+  
+  .bed-card span {
+    font-weight: bold;
+  }
+  
+  /* Define styles for select inputs */
+  select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  
+  /* Define styles for edit and cancel buttons */
+  .ward-card .edit-buttons button {
+    margin-right: 10px;
+    background-color: #28a745;
+  }
+  
+  .ward-card .edit-buttons button:last-child {
+    background-color: #dc3545;
+  }
+  
+  .ward-card .edit-buttons button:hover {
+    background-color: #218838;
+  }
+  
+  

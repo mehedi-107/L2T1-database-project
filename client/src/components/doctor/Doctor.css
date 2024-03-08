@@ -1,0 +1,149 @@
+/* Doctor.css */
+
+/* Reset default margin and padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Global styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+/* Doctor container */
+.doctor-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Doctor header */
+.doctor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.logo img {
+  max-width: 100px;
+}
+
+.doctorul {
+  list-style-type: none; /* Remove default bullet points */
+  padding: 0; /* Remove default padding */
+
+}
+
+.doctorul li {
+  display: inline; /* Display list items inline */
+  box-shadow: none;
+  margin-bottom: 10px;
+  background-color: #f8f9fa;
+  box-shadow: none; /* Add space between list items */
+}
+
+.doctorul li a {
+  text-decoration: none; /* Remove underline from links */
+  color: #333; /* Set link color */
+}
+
+/* Style for dropdown button */
+.doctor-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  background-color:#f8f9fa;
+  font-weight: bold;
+  color: #333;
+  padding: 0;
+  font-size: 19px;
+  border: none;
+  cursor: pointer;
+}
+
+.doctor-dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  z-index: 1;
+}
+
+.doctor-dropdown-content button {
+  color: #333;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.doctor-dropdown-content button:hover {
+  background-color: #ddd;
+}
+
+.doctor-dropdown:hover .doctor-dropdown-content {
+  display: block;
+}
+
+
+/* Doctor info */
+.doctor-info {
+  background-color: #fff;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Popup */
+.doctor-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-popup h3 {
+  margin-top: 0;
+}
+
+.doctor-popup input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.doctor-popup button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.doctor-popup button:hover {
+  background-color: #0056b3;
+}
+
+.doctor-popup .doctor-error-msg {
+  color: red;
+  margin-top: 5px;
+}

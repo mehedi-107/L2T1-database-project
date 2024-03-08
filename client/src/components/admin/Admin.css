@@ -1,0 +1,48 @@
+.admin-navigation {
+  background-color: #f0f0f0;
+  padding: 10px;
+}
+
+.admin-navigation ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.admin-navigation ul li {
+  display: inline-block;
+  margin-right: 20px;
+  cursor: pointer;
+  color: #333;
+}
+
+.admin-navigation ul li:hover {
+  color: #007bff;
+}
+
+.admin-page {
+  font-family: Arial, sans-serif;
+}
+
+.admin-container {
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+.logo img {
+  max-width: 100px;
+}
+
+.admin-container h2 {
+  margin-top: 20px;
+}
+
+.feature-container {
+  width: 100%;
+}
+
+.footer {
+  margin-top: 20px;
+  text-align: center;
+  color: #ffffff;
+}

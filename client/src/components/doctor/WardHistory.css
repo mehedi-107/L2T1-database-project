@@ -1,0 +1,31 @@
+.ward-info-table table,
+.doctor-info-table table,
+.nurse-info-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ward-info-table h5,
+.doctor-info-table h5,
+.nurse-info-table h5 {
+    margin-top: 0;
+}
+
+.ward-info-table td,
+.doctor-info-table td,
+.nurse-info-table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.ward-info-table td:first-child,
+.doctor-info-table td:first-child,
+.nurse-info-table td:first-child {
+    font-weight: bold;
+}
+
+.ward-info-table td:nth-child(even),
+.doctor-info-table td:nth-child(even),
+.nurse-info-table td:nth-child(even) {
+    text-align: right;
+}

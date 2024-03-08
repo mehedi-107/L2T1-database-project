@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import './FindADoctor.css';
-import DoctorCard from './DoctorCard';
+import DoctorCard from '../DoctorCard';
 
 function FindADoctor({ patient }) {
   const [doctors, setDoctors] = useState([]);

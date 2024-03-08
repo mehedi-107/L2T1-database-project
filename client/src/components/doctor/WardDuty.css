@@ -1,4 +1,5 @@
 /* WardDuty.css */
+
 /* WardDuty component */
 .ward-duty-container {
   max-width: 800px;
@@ -29,6 +30,8 @@
 .ward-duty-info {
   margin-top: 20px;
 }
+
+
 
 /* Loading spinner */
 .loader {
@@ -62,6 +65,7 @@
 }
 
 .beds-container {
+  width: 200%;
   display: flex;
   justify-content: space-between;
 }
@@ -77,4 +81,34 @@
 
 .right-beds {
   margin-left: 10px; /* Adjust as needed */
+}
+
+/* WardDuty.css */
+
+.ward-duty-info {
+  width: 100%; /* Ensure the ward duty info container takes the full width */
+}
+
+.ward-history {
+  margin-top: 20px; /* Add some top margin for spacing */
+}
+
+.ward-history ul {
+  list-style-type: none; /* Remove default list styling */
+  padding: 0; /* Remove default padding */
+}
+
+.ward-history li.history {
+  border: 1px solid #ccc; /* Add border for each history entry */
+  border-radius: 5px; /* Add border radius for rounded corners */
+  padding: 20px; /* Add padding for spacing */
+  margin-bottom: 20px; /* Add bottom margin for spacing between entries */
+}
+
+.ward-history li h4 {
+  margin-top: 0; /* Remove top margin for the heading */
+}
+
+.ward-history li p {
+  margin: 10px 0; /* Add margin for spacing between paragraphs */
 }

@@ -22,16 +22,20 @@
   display: flex;
 }
 
-.navbar li {
+.nav-item {
+  background-color: #ffffff;
+  width: 100px;
+  height: 20px;
+  padding: 10px 20px;
   margin-right: 20px;
   cursor: pointer;
-  font-size: 18px;
-  color: #333;
+  font-size: 16px;
+  color: #ffffff;
   text-transform: uppercase;
   transition: all 0.3s ease;
 }
 
-.navbar li:hover {
+.nav-item:hover {
   color: #ff5722;
   transform: scale(1.1);
 }
@@ -72,11 +76,11 @@
   }
 }
 
-.navbar li {
+.nav-item {
   animation: buttonEffect 2s infinite;
 }
 
-.navbar li:hover {
+.nav-item:hover {
   animation: none;
   background-color: #ff5722;
   transform: scale(1.1);

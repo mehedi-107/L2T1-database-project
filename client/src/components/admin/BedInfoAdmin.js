@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './BedInfo.css'; // Import CSS file for styling
+import './BedInfoAdmin.css'; // Import CSS file for styling
 
-const BedInfo = () => {
+const BedInfoAdmin = () => {
     const [selectedBed, setSelectedBed] = useState(null);
     const [loading, setLoading] = useState(true);
     const [wardHistory, setWardHistory] = useState([]);
@@ -96,7 +96,7 @@ const BedInfo = () => {
 
     return (
         <div className="bed-info-container">
-            <h2>Bed Information</h2>
+            <h2>Bed Information Admin</h2>
             {loading ? (
                 <p>Loading...</p>
             ) : selectedBed ? (
@@ -263,4 +263,4 @@ const BedInfo = () => {
     );
 };
 
-export default BedInfo;
+export default BedInfoAdmin;
