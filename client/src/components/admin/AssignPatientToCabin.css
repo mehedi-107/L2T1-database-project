@@ -1,0 +1,32 @@
+/* AssignPatientToCabin.css */
+
+/* Container styles */
+.container {
+    margin-top: 20px; /* Adjust top margin */
+  }
+  
+  /* Input styles */
+  input[type="text"],
+  select {
+    width: 100%; /* Full width input/select */
+    padding: 10px; /* Padding */
+    margin-bottom: 10px; /* Bottom margin */
+    border: 1px solid #ccc; /* Border color */
+    border-radius: 5px; /* Border radius */
+  }
+  
+  /* Button styles */
+  button {
+    background-color: #007bff; /* Button background color */
+    color: #fff; /* Button text color */
+    border: none;
+    padding: 10px 20px; /* Padding */
+    border-radius: 5px; /* Border radius */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth background color transition */
+  }
+  
+  button:hover {
+    background-color: #0056b3; /* Background color on hover */
+  }
+  

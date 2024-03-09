@@ -104,7 +104,6 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Popup */
 .doctor-popup {
   position: fixed;
   top: 50%;
@@ -115,6 +114,7 @@ body {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 300px; /* Adjust the width as needed */
 }
 
 .doctor-popup h3 {
@@ -122,7 +122,7 @@ body {
 }
 
 .doctor-popup input {
-  width: 100%;
+  width: calc(100% - 16px); /* Adjust for padding */
   margin-bottom: 10px;
   padding: 8px;
   border: 1px solid #ccc;

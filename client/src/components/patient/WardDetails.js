@@ -1,6 +1,14 @@
 import React from 'react';
 
 const WardDetails = ({ ward }) => {
+  if (!ward || ward.error) {
+    return (
+      <div className="ward-details">
+        <h3>Ward Details</h3>
+        <p>You are not admitted in any ward.</p>
+      </div>
+    );
+  }
   return (
     <div className="ward-details">
       <h3>Ward Details</h3>
@@ -26,30 +34,6 @@ const WardDetails = ({ ward }) => {
             <tr>
               <td><strong>Admission Reason:</strong></td>
               <td>{ward.ADMISSION_REASON}</td>
-            </tr>
-            <tr>
-              <td><strong>Patient ID:</strong></td>
-              <td>{ward.PATIENT_ID}</td>
-            </tr>
-            <tr>
-              <td><strong>Patient Name:</strong></td>
-              <td>{ward.PATIENT_FIRST_NAME} {ward.PATIENT_LAST_NAME}</td>
-            </tr>
-            <tr>
-              <td><strong>Patient Email:</strong></td>
-              <td>{ward.PATIENT_EMAIL}</td>
-            </tr>
-            <tr>
-              <td><strong>Patient Gender:</strong></td>
-              <td>{ward.PATIENT_GENDER}</td>
-            </tr>
-            <tr>
-              <td><strong>Patient Date of Birth:</strong></td>
-              <td>{ward.PATIENT_DATE_OF_BIRTH}</td>
-            </tr>
-            <tr>
-              <td><strong>Patient Contact Number:</strong></td>
-              <td>{ward.PATIENT_CONTACT_NO}</td>
             </tr>
             <tr>
               <td><strong>Day Doctor:</strong></td>

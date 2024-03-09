@@ -1,0 +1,75 @@
+/* ActivityCard.css */
+
+/* Base styles for the activity card */
+.activity-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+}
+
+/* Styling for the card header */
+.card-header {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+/* Styling for the cabin number */
+.card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+/* Styling for the activity date */
+.card-header p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Styling for the card body */
+.card-body p {
+    margin: 10px 0;
+    font-size: 16px;
+    color: #444;
+}
+
+/* Styling for the strong tags within the card body */
+.card-body p strong {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Hover effect on the activity card */
+.activity-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+    .activity-card {
+        padding: 15px;
+    }
+
+    .card-header {
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+    }
+
+    .card-header h3 {
+        font-size: 16px;
+    }
+
+    .card-header p {
+        font-size: 12px;
+    }
+
+    .card-body p {
+        font-size: 14px;
+    }
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Nurse.css';
+import Notification from './Notification';
 import image1 from './logo2.png'; // Make sure to import your image file
 
 const Nurse = ({ userData }) => {
@@ -8,7 +9,12 @@ const Nurse = ({ userData }) => {
   const [showWards, setShowWards] = useState(false);
   const [nurseDutiesInCabins, setNurseDutiesInCabins] = useState([]);
   const [nurseDutiesInWards, setNurseDutiesInWards] = useState([]);
-
+  const [showNotification, setShowNotification] = useState(false); 
+  const [showPasswordPopup, setShowPasswordPopup] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changePasswordError, setChangePasswordError] = useState(null);
 
   useEffect(() => {
     const fetchNurseDuties = async () => {
@@ -37,18 +43,59 @@ const Nurse = ({ userData }) => {
     setShowWards(!showWards);
   };
 
-  const handleChangePassword = () => {
-    // Define your logic for changing password here
-  };
-
-  const handleUpdateProfileClick = () => {
-    // Define your logic for updating profile here
+  const handleNotification = () => {
+    setShowNotification(!showNotification); // Toggle notification visibility
   };
 
   const handleLogout = () => {
     window.location.href = '/';
   };
 
+  const handlePopupClose = () => {
+    setShowPasswordPopup(false);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setChangePasswordError(null);
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setChangePasswordError('Please fill in all fields.');
+      return;
+    }
+  
+    if (newPassword !== confirmPassword) {
+      setChangePasswordError('New password and confirm password do not match.');
+      return;
+    }
+  
+    try {
+      const response = await fetch(`http://localhost:5000/changePassword/${userData.user.NURSE_ID}/${currentPassword}/${newPassword}/nurse`, {
+        method: 'GET',
+      });
+      const data = await response.json();
+      console.log(data);
+      if (data.error) {
+        setChangePasswordError(data.error);
+      } else if (data.triggerMessage === 'PASSWORD DOES NOT MEET CRITERIA') {
+        setChangePasswordError('Password should contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character');
+      } else if (data.triggerMessage === 'Invalid current password') {
+        setChangePasswordError('Current password is incorrect');
+      } else {
+        alert('Password changed successfully');
+        setShowPasswordPopup(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setChangePasswordError(null);
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setChangePasswordError('An error occurred while changing the password.');
+    }
+  };
+  
   return (
     <div className='nurse-container'>
       <header className="nurse-header">
@@ -56,12 +103,41 @@ const Nurse = ({ userData }) => {
           <img src={image1} alt="Health Harbor Logo" />
         </div>
         <nav className="navbar">
-          <button onClick={handleUpdateProfileClick}>Update Profile</button>
-          <button onClick={handleChangePassword}>Change Password</button>
+          <button onClick={() => setShowPasswordPopup(true)}>Change Password</button> 
           <button onClick={handleLogout}>Logout</button>
+          <button onClick={handleNotification}>Notifications</button>
         </nav>
       </header>
+      {showPasswordPopup && (
+        <div className="patient-popup">
+          <h3>Change Password</h3>
+          <input
+            type="password"
+            placeholder="Current Password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Confirm New Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <button onClick={handleChangePassword}>Save</button>
+          <button onClick={handlePopupClose}>Cancel</button>
+          {changePasswordError && <p className="patient-error-msg">{changePasswordError}</p>}
+        </div>
+      )}
 
+      {showNotification && (
+        <Notification nurseId={userData.user.NURSE_ID} onClose={handleNotification} />
+      )}
       <div className="nurse-info">
         <h2>Your Information</h2>
         <div className="info-details">

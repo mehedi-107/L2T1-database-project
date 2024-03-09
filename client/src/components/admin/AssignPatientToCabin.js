@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import './AssignPatientToCabin.css';
 
 const AssignPatientToCabin = () => {
   const [patientId, setPatientId] = useState('');
   const [cabinType, setCabinType] = useState('');
   const [cabinTypes, setCabinTypes] = useState([]);
+  const [popupMessage, setPopupMessage] = useState('');
 
   useEffect(() => {
     const fetchCabinTypes = async () => {
@@ -28,10 +30,7 @@ const AssignPatientToCabin = () => {
         }
       });
       const message = await response.text();
-      console.log(message);
-      
-      // Display the message
-      alert(message);
+      setPopupMessage(message); // Set the popup message
       
       // Clear the input fields
       setPatientId('');
@@ -40,10 +39,21 @@ const AssignPatientToCabin = () => {
       console.error('Error:', error);
     }
   };
-  
+
+  const closePopup = () => {
+    setPopupMessage('');
+  };
 
   return (
     <div>
+      {popupMessage && (
+        <div className="popup">
+          <div className="popup-content">
+            <span className="close" onClick={closePopup}>&times;</span>
+            <p>{popupMessage}</p>
+          </div>
+        </div>
+      )}
       <input
         type="text"
         placeholder="Patient ID"

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './UpdateCabin.css';
 
 const UpdateCabin = () => {
   const [cabinId, setCabinId] = useState('');
@@ -10,7 +11,7 @@ const UpdateCabin = () => {
     DOCTOR_ID_DAY: '',
     DOCTOR_ID_NIGHT: '',
     NURSE_ID_1: '',
-    NURSE_ID_2: ''
+    NURSE_ID_2: '',
   });
 
   useEffect(() => {
@@ -20,6 +21,7 @@ const UpdateCabin = () => {
         const response = await fetch('http://localhost:5000/availableDoctors');
         const data = await response.json();
         setAvailableDoctors(data);
+        console.log(data);
       } catch (error) {
         console.error('Error fetching available doctors:', error);
       }
@@ -41,6 +43,7 @@ const UpdateCabin = () => {
 
   const handleSearch = async () => {
     try {
+      console.log(cabinId);
       const response = await fetch(`http://localhost:5000/cabinDetails/${cabinId}`);
       const data = await response.json();
       console.log(data);
@@ -61,23 +64,27 @@ const UpdateCabin = () => {
   const handleSave = async () => {
     setEditMode(false);
 
+    if(updatedCabinDetails.DOCTOR_ID_DAY ==='')
+    updatedCabinDetails.DOCTOR_ID_DAY = cabinDetails.DOCTOR_ID_DAY;
+    if(updatedCabinDetails.DOCTOR_ID_NIGHT ==='')
+    updatedCabinDetails.DOCTOR_ID_NIGHT = cabinDetails.DOCTOR_ID_NIGHT;
+    
+    if(updatedCabinDetails.NURSE_ID_1 ==='')
+    updatedCabinDetails.NURSE_ID_1 = cabinDetails.NURSE_ID_1;
+    
+    if(updatedCabinDetails.NURSE_ID_2 ==='')
+    updatedCabinDetails.NURSE_ID_2 = cabinDetails.NURSE_ID_2;
+    console.log(updatedCabinDetails);
+    
+  updatedCabinDetails.DOCTOR_ID_DAY= parseInt(updatedCabinDetails.DOCTOR_ID_DAY);
+  updatedCabinDetails.DOCTOR_ID_NIGHT= parseInt(updatedCabinDetails.DOCTOR_ID_NIGHT);
+  updatedCabinDetails.NURSE_ID_1= parseInt(updatedCabinDetails.NURSE_ID_1);
+  updatedCabinDetails.NURSE_ID_2= parseInt(updatedCabinDetails.NURSE_ID_2);
+
+    
     try {
-      // Check if the doctor ID for day and night shifts are different
-      if (updatedCabinDetails.DOCTOR_ID_DAY === updatedCabinDetails.DOCTOR_ID_NIGHT) {
-        console.error('Error: Doctor ID for day and night shifts should be different');
-        // Optionally, you can display an error message to the user
-        return;
-      }
-
-      // Check if the nurse IDs are different
-      if (updatedCabinDetails.NURSE_ID_1 === updatedCabinDetails.NURSE_ID_2) {
-        console.error('Error: Nurse IDs should be different');
-        // Optionally, you can display an error message to the user
-        return;
-      }
-
       // Send the updated cabin details to the server
-      const response = await fetch(`http://localhost:5000/updateCabinDetails/${cabinDetails.CABIN_ID}`, {
+      const response = await fetch(`http://localhost:5000/updateCabinDetails/${cabinId}`, {
         method: 'PUT', // or 'POST'
         headers: {
           'Content-Type': 'application/json',
@@ -99,6 +106,31 @@ const UpdateCabin = () => {
     }
   };
 
+  const handleCheckout = async () => {
+    try {
+      // Send a request to checkout the patient from the cabin
+      const response = await fetch(`http://localhost:5000/checkout/${cabinDetails.CABIN_ID}`, {
+        method: 'POST', // or 'PUT'
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Optionally, you can send additional data if required
+      });
+
+      if (!response.ok) {
+        console.error('Error checking out patient:', response.statusText);
+        // Optionally, you can display an error message to the user
+        return;
+      }
+
+      // Optionally, provide feedback to the user that the patient was checked out successfully
+      console.log('Patient checked out successfully');
+    } catch (error) {
+      console.error('Error checking out patient:', error);
+      // Optionally, you can display an error message to the user
+    }
+  };
+
   return (
     <div className="cabin-card">
       <h3>Update Cabin Details</h3>
@@ -114,7 +146,9 @@ const UpdateCabin = () => {
           <h4>Cabin Details</h4>
           <p>Cabin ID: {cabinDetails.CABIN_NO}</p>
           <p>Floor No: {cabinDetails.FLOOR_NO}</p>
+          <p>Patient Name: {cabinDetails.PATIENT_FIRST_NAME} {cabinDetails.PATIENT_LAST_NAME}</p> 
           <p>Patient ID: {cabinDetails.PATIENT_ID}</p>
+          <p>Admission Reason: {cabinDetails.REASON}</p>
           <p>Cabin Type: {cabinDetails.CABIN_TYPE}</p>
           <p>
             Doctor ID (Day):{' '}
@@ -123,7 +157,7 @@ const UpdateCabin = () => {
                 value={updatedCabinDetails.DOCTOR_ID_DAY}
                 onChange={handleDoctorChange('DOCTOR_ID_DAY')}
               >
-                <option value="">Select Doctor</option>
+                <option value="">Available Doctors(Select One)</option>
                 {availableDoctors.map((doctor) => (
                   <option key={doctor.DOCTOR_ID} value={doctor.DOCTOR_ID}>
                     {doctor.DOCTOR_NAME} - {doctor.DOCTOR_ID}
@@ -134,14 +168,16 @@ const UpdateCabin = () => {
               <span>{cabinDetails.DOCTOR_ID_DAY}</span>
             )}
           </p>
+          <p>Name of Doctor(Day): {cabinDetails.DAY_DOCTOR_FIRST_NAME}</p>
           <p>
+            
             Doctor ID (Night):{' '}
             {editMode ? (
               <select
                 value={updatedCabinDetails.DOCTOR_ID_NIGHT}
                 onChange={handleDoctorChange('DOCTOR_ID_NIGHT')}
               >
-                <option value="">Select Doctor</option>
+                <option value="">Available Doctors(Select One)</option>
                 {availableDoctors.map((doctor) => (
                   <option key={doctor.DOCTOR_ID} value={doctor.DOCTOR_ID}>
                     {doctor.DOCTOR_NAME} - {doctor.DOCTOR_ID}
@@ -152,6 +188,7 @@ const UpdateCabin = () => {
               <span>{cabinDetails.DOCTOR_ID_NIGHT}</span>
             )}
           </p>
+          <p>Name of Doctor(Night): {cabinDetails.NIGHT_DOCTOR_FIRST_NAME}</p>
           <p>
             Nurse ID 1:{' '}
             {editMode ? (
@@ -159,7 +196,7 @@ const UpdateCabin = () => {
                 value={updatedCabinDetails.NURSE_ID_1}
                 onChange={handleNurseChange('NURSE_ID_1')}
               >
-                <option value="">Select Nurse</option>
+                <option value="">Available Nurses</option>
                 {availableNurses.map((nurse) => (
                   <option key={nurse.NURSE_ID} value={nurse.NURSE_ID}>
                     {nurse.NURSE_NAME}-{nurse.NURSE_ID}
@@ -177,7 +214,7 @@ const UpdateCabin = () => {
                 value={updatedCabinDetails.NURSE_ID_2}
                 onChange={handleNurseChange('NURSE_ID_2')}
               >
-                <option value="">Select Nurse</option>
+                <option value="">Available Nurses</option>
                 {availableNurses.map((nurse) => (
                   <option key={nurse.NURSE_ID} value={nurse.NURSE_ID}>
                     {nurse.NURSE_NAME}-{nurse.NURSE_ID}
@@ -194,7 +231,10 @@ const UpdateCabin = () => {
               <button onClick={() => setEditMode(false)}>Cancel</button>
             </>
           ) : (
-            <button onClick={() => setEditMode(true)}>Edit</button>
+            <>
+              <button onClick={handleCheckout}>Checkout Patient</button>
+              <button onClick={() => setEditMode(true)}>Edit</button>
+            </>
           )}
         </>
       )}

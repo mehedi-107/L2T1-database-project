@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './CabinDuty.css'; // Import CSS file for styling
 import CancelModal from './CancelModal'; // Import the CancelModal component
+import ActivityCard from './ActivityCard'; // Import the ActivityCard component
 
 const CabinDuty = ({ doctor }) => {
     const [loading, setLoading] = useState(true);
@@ -9,9 +10,6 @@ const CabinDuty = ({ doctor }) => {
     const [interval, setInterval] = useState(7); // Default interval set to 7 days
     const [currentPage, setCurrentPage] = useState(1);
     const [activitiesPerPage] = useState(6); // Number of activities per page
-    const [requestReason, setRequestReason] = useState('');
-    const [requestSuccess, setRequestSuccess] = useState(false);
-    const [selectedCabinId, setSelectedCabinId] = useState(null);
 
     useEffect(() => {
         const fetchDoctorActivities = async () => {
@@ -33,6 +31,7 @@ const CabinDuty = ({ doctor }) => {
                 const cabinDutyData = await cabinDutyResponse.json();
 
                 setActivities(activitiesData);
+                console.log(activitiesData);
                 setCabinDuty(cabinDutyData);
                 setLoading(false);
             } catch (error) {
@@ -78,37 +77,6 @@ const CabinDuty = ({ doctor }) => {
         }
     };
 
-    const handleCancelRequest = async (cabinId, reason) => {
-        try {
-            // Send the cancellation request to the server
-            // Here you will implement the logic to send the request with the reason to the server
-            // For demonstration purposes, let's just set a success message
-            console.log(`Cancellation requested for Cabin ID ${cabinId} with reason: ${reason}`);
-            // Reset selectedCabinId after submission
-            setSelectedCabinId(null);
-            // Set the request success message
-            setRequestSuccess(true);
-            // Clear the request reason
-            setRequestReason('');
-        } catch (error) {
-            console.error('Error submitting cancellation request:', error);
-            // Handle error if the request submission fails
-        }
-    };
-
-    const handleSubmitRequest = async () => {
-        try {
-            // Send the request to the server
-            // Here you will implement the logic to send the request with the reason to the server
-            // For demonstration purposes, let's just set a success message
-            setRequestSuccess(true);
-            setRequestReason('');
-        } catch (error) {
-            console.error('Error submitting request:', error);
-            // Handle error if the request submission fails
-        }
-    };
-
     return (
         <div className="cabin-duty-container">
             <h2>Cabin Duty</h2>
@@ -120,14 +88,7 @@ const CabinDuty = ({ doctor }) => {
                     {cabinDuty.map((cabin, index) => (
                         <div key={index} className="cabin-info">
                             <h3>Cabin No: {cabin.CABIN_NO}</h3>
-                            <button onClick={() => setSelectedCabinId(cabin.CABIN_NO)}>Cancel Duty</button>
-                            {/* Render CancelModal for selected cabin */}
-                            {selectedCabinId === cabin.CABIN_NO && (
-                                <CancelModal
-                                    cabinId={cabin.CABIN_NO}
-                                    onCancel={handleCancelRequest}
-                                />
-                            )}
+                            
                             {/* Display cabin information */}
                             <table>
                                 <tbody>
@@ -192,7 +153,7 @@ const CabinDuty = ({ doctor }) => {
                 </div>
             )}
 
-            <h2>Doctor Recent Activities in Cabin</h2>
+           <h2>Doctor Recent Activities in Cabin</h2>
             <div className="interval-selector">
                 <button onClick={decrementInterval}>-</button>
                 <input
@@ -206,14 +167,15 @@ const CabinDuty = ({ doctor }) => {
                 <div className="loader">Loading...</div>
             ) : (
                 <div className="activities-list">
-                    {/* Display activities list here */}
+                    {currentActivities.map((activity, index) => (
+                        <ActivityCard key={index} activity={activity} />
+                    ))}
                 </div>
             )}
             <div className="pagination">
                 <button onClick={prevPage} disabled={currentPage === 1}>Previous</button>
                 <button onClick={nextPage} disabled={indexOfLastActivity >= activities.length}>Next</button>
             </div>
-            
         </div>
     );
 };

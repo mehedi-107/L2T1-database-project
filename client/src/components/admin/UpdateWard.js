@@ -113,7 +113,7 @@ const UpdateWard = () => {
 
     return (
         <div className="ward-card">
-            <h3>Update Ward Details</h3>
+            <h4>Update Ward Details</h4>
             <input
                 type="text"
                 placeholder="Ward ID (101-120, 201-220, ...)"
@@ -123,100 +123,110 @@ const UpdateWard = () => {
             <button onClick={handleSearch}>Search</button>
             {wardDetails && (
                 <>
-                    <table className="ward-table">
-                        <thead>
-                            <tr>
-                                <th>Ward Details</th>
-                                <th>Doctor Information</th>
-                                <th>Nurse Information</th>
-                                <th>Contact Information</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <p>Ward ID: {wardDetails.WARD_NO}</p>
-                                    <p>Floor No: {wardDetails.FLOOR_NO}</p>
-                                </td>
-                                <td>
-                                    <p>
-                                        Doctor ID (Day): {editMode ? (
-                                            <select
-                                                value={updatedWardDetails.DOCTOR_ID_DAY}
-                                                onChange={handleDoctorChange('DOCTOR_ID_DAY')}
-                                            >
-                                                <option value="">Select Doctor</option>
-                                                {availableDoctors.map((doctor) => (
-                                                    <option key={doctor.DOCTOR_ID} value={doctor.DOCTOR_ID}>
-                                                        {doctor.DOCTOR_NAME} - {doctor.DOCTOR_ID}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <span>{wardDetails.DOCTOR_ID_DAY}</span>
-                                        )}
-                                    </p>
-                                    <p>
-                                        Doctor ID (Night): {editMode ? (
-                                            <select
-                                                value={updatedWardDetails.DOCTOR_ID_NIGHT}
-                                                onChange={handleDoctorChange('DOCTOR_ID_NIGHT')}
-                                            >
-                                                <option value="">Select Doctor</option>
-                                                {availableDoctors.map((doctor) => (
-                                                    <option key={doctor.DOCTOR_ID} value={doctor.DOCTOR_ID}>
-                                                        {doctor.DOCTOR_NAME} - {doctor.DOCTOR_ID}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <span>{wardDetails.DOCTOR_ID_NIGHT}</span>
-                                        )}
-                                    </p>
-                                </td>
-                                <td>
-                                    {[1, 2, 3, 4].map((nurseIndex) => (
-                                        <p key={nurseIndex}>
-                                            Nurse ID {nurseIndex}:{' '}
-                                            {editMode ? (
-                                                <select
-                                                    value={updatedWardDetails[`NURSE_ID_${nurseIndex}`]}
-                                                    onChange={handleNurseChange(`NURSE_ID_${nurseIndex}`)}
-                                                >
-                                                    <option value="">Select Nurse</option>
-                                                    {availableNurses.map((nurse) => (
-                                                        <option key={nurse.NURSE_ID} value={nurse.NURSE_ID}>
-                                                            {nurse.NURSE_NAME}-{nurse.NURSE_ID}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            ) : (
-                                                <span>{wardDetails[`NURSE_ID_${nurseIndex}`]}</span>
-                                            )}
-                                        </p>
-                                    ))}
-                                </td>
-                                <td>
-                                    <p>Doctor Email (Day): {wardDetails.DOCTOR_EMAIL_DAY}</p>
-                                    <p>Doctor Contact No (Day): {wardDetails.DOCTOR_CONTACT_NO_DAY}</p>
-                                    <p>Doctor Email (Night): {wardDetails.DOCTOR_EMAIL_NIGHT}</p>
-                                    <p>Doctor Contact No (Night): {wardDetails.DOCTOR_CONTACT_NO_NIGHT}</p>
-                                    <p>Nurse 1 Name: {wardDetails.NURSE_1_NAME}</p>
-                                    <p>Nurse 1 Email: {wardDetails.NURSE_1_EMAIL}</p>
-                                    <p>Nurse 1 Contact No: {wardDetails.NURSE_1_CONTACT_NO}</p>
-                                    <p>Nurse 2 Name: {wardDetails.NURSE_2_NAME}</p>
-                                    <p>Nurse 2 Email: {wardDetails.NURSE_2_EMAIL}</p>
-                                    <p>Nurse 2 Contact No: {wardDetails.NURSE_2_CONTACT_NO}</p>
-                                    <p>Nurse 3 Name: {wardDetails.NURSE_3_NAME}</p>
-                                    <p>Nurse 3 Email: {wardDetails.NURSE_3_EMAIL}</p>
-                                    <p>Nurse 3 Contact No: {wardDetails.NURSE_3_CONTACT_NO}</p>
-                                    <p>Nurse 4 Name: {wardDetails.NURSE_4_NAME}</p>
-                                    <p>Nurse 4 Email: {wardDetails.NURSE_4_EMAIL}</p>
-                                    <p>Nurse 4 Contact No: {wardDetails.NURSE_4_CONTACT_NO}</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <h3>Ward Details</h3>
+    <table className="ward-table">
+        <thead>
+            <tr>
+                <th>Ward ID</th>
+                <th>Floor No</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{wardDetails.WARD_NO}</td>
+                <td>{wardDetails.FLOOR_NO}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Doctor Details</h3>
+    <table className="doctor-table">
+        <thead>
+            <tr>
+                <th>Shift</th>
+                <th>Doctor ID</th>
+                <th>Doctor Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Day</td>
+                <td>
+                    {editMode ? (
+                        <select
+                            value={updatedWardDetails.DOCTOR_ID_DAY}
+                            onChange={handleDoctorChange('DOCTOR_ID_DAY')}
+                        >
+                            <option value="">Select Doctor</option>
+                            {availableDoctors.map((doctor) => (
+                                <option key={doctor.DOCTOR_ID} value={doctor.DOCTOR_ID}>
+                                    {doctor.DOCTOR_NAME} - {doctor.DOCTOR_ID}
+                                </option>
+                            ))}
+                        </select>
+                    ) : (
+                        wardDetails.DOCTOR_ID_DAY
+                    )}
+                </td>
+                <td>{wardDetails.DCOTOR_DAY_FIRST_NAME} {wardDetails.DOCTOR_DAY_LAST_NAME}</td>
+            </tr>
+            <tr>
+                <td>Night</td>
+                <td>
+                    {editMode ? (
+                        <select
+                            value={updatedWardDetails.DOCTOR_ID_NIGHT}
+                            onChange={handleDoctorChange('DOCTOR_ID_NIGHT')}
+                        >
+                            <option value="">Select Doctor</option>
+                            {availableDoctors.map((doctor) => (
+                                <option key={doctor.DOCTOR_ID} value={doctor.DOCTOR_ID}>
+                                   {doctor.DOCTOR_NAME}-{doctor.DOCTOR_ID}
+                                </option>
+                            ))}
+                        </select>
+                    ) : (
+                        wardDetails.DOCTOR_ID_NIGHT
+                    )}
+                </td>
+                <td>{wardDetails.DOCTOR_NIGHT_FIRST_NAME} {wardDetails.DOCTOR_NIGHT_LAST_NAME}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Nurse Details</h3>
+    <table className="nurse-table">
+        <thead>
+            <tr>
+                <th>Nurse ID</th>
+                <th>Nurse Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {[1, 2, 3, 4].map((nurseIndex) => (
+                <tr key={nurseIndex}>
+                    <td>
+                        {editMode ? (
+                            <select
+                                value={updatedWardDetails[`NURSE_ID_${nurseIndex}`]}
+                                onChange={handleNurseChange(`NURSE_ID_${nurseIndex}`)}
+                            >
+                                <option value="">Select Nurse</option>
+                                {availableNurses.map((nurse) => (
+                                    <option key={nurse.NURSE_ID} value={nurse.NURSE_ID}>
+                                    {nurse.NURSE_NAME}-    {nurse.NURSE_ID}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            wardDetails[`NURSE_ID_${nurseIndex}`]
+                        )}
+                    </td>
+                    <td>{wardDetails[`NURSE_${nurseIndex}_FULL_NAME`]}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
                     <div className="bed-info">
                         <h4>Bed Information</h4>
                         <div className="beds-container1">

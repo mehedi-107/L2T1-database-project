@@ -1,0 +1,45 @@
+/* WardDetails.css */
+
+.ward-details {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .ward-info {
+    margin-top: 20px;
+  }
+  
+  .ward-info table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .ward-info th, .ward-info td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .ward-info th {
+    text-align: left;
+    font-weight: bold;
+  }
+  
+  .ward-info td {
+    vertical-align: top;
+  }
+  
+  .ward-info td:nth-child(odd) {
+    width: 20%;
+  }
+  
+  .ward-info td:nth-child(even) {
+    width: 30%;
+  }
+  
+  .ward-info td[colspan="4"] {
+    width: 100%;
+  }
+  

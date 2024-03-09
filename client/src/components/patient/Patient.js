@@ -7,6 +7,7 @@ import PatientInfo from './PatientInfo';
 import CabinDetails from './CabinDetails';
 import WardDetails from './WardDetails';
 import AppointmentDetails from './AppointmentDetails';
+import Notification from './Notification';
 
 const Patient = ({ userData }) => {
   const [showAppointments, setShowAppointments] = useState(false);
@@ -15,6 +16,12 @@ const Patient = ({ userData }) => {
   const [appointments, setAppointments] = useState([]);
   const [allocatedCabins, setAllocatedCabins] = useState([]);
   const [allocatedWards, setAllocatedWards] = useState([]);
+  const [showNotification, setShowNotification] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changePasswordError, setChangePasswordError] = useState(null);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -76,6 +83,61 @@ const Patient = ({ userData }) => {
     setShowCabins(false);
   };
 
+  const handleNotification = () => {
+    setShowNotification(!showNotification);
+  };
+
+  const handlePopupClose = () => {
+    setShowPopup(false);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setChangePasswordError(null);
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setChangePasswordError('Please fill in all fields.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setChangePasswordError('New password and confirm password do not match.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/changePassword/${userData.user.PATIENT_ID}/${currentPassword}/${newPassword}/patient`, {
+        method: 'GET',
+      });
+      const data = await response.json();
+      console.log(data);
+      if (data.error) {
+        setChangePasswordError(data.error);
+      } 
+      else if (data.triggerMessage==='REQUIRED CRITERIA NOT FULFILLED')
+      {
+        setChangePasswordError('Password should contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character');
+      }
+      else if(data.triggerMessage==='Invalid current password')
+      {
+        setChangePasswordError('Current password is incorrect');
+      }
+
+      else {
+        alert('Password changed successfully');
+        setShowPopup(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setChangePasswordError(null);
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setChangePasswordError('An error occurred while changing the password.');
+    }
+  };
+
   return (
     <div>
       <header>
@@ -87,8 +149,43 @@ const Patient = ({ userData }) => {
           <Link onClick={handleAppointmentsClick}>Appointments</Link>
           <Link onClick={handleCabinsClick}>Cabins</Link>
           <Link onClick={handleWardsClick}>Wards</Link>
+          <Link onClick={handleNotification}>Notifications</Link>
+          <button onClick={() => setShowPopup(true)}>Change Password</button>
         </nav>
       </header>
+
+      {showNotification && (
+        <Notification nurseId={userData.user.NURSE_ID} onClose={handleNotification} />
+      )}
+
+      {showPopup && (
+        <div className="patient-popup">
+          <h3>Change Password</h3>
+          <input
+            type="password"
+            placeholder="Current Password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Confirm New Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <button onClick={handleChangePassword}>Save</button>
+          <button onClick={handlePopupClose}>Cancel</button>
+          {changePasswordError && <p className="patient-error-msg">{changePasswordError}</p>}
+        </div>
+      )}
+
+
       <div className="patient-container">
         <div className="header">
           <h2>Patient Information</h2>

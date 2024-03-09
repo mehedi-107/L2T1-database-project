@@ -1,103 +1,125 @@
 /* Patient.css */
 
+/* Reset default margin and padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Global styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+/* Patient container */
 .patient-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
+/* Header */
 header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 20px 40px; /* Reduce padding */
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .logo img {
-  max-height: 60px; /* Reduce logo size */
+  max-width: 100px;
 }
 
 nav ul {
-  list-style-type: none; /* Remove bullet points */
-  margin: 0;
-  padding: 0;
+  list-style-type: none;
 }
 
 nav ul li {
   display: inline;
-  margin-right: 20px; /* Adjust spacing */
+  margin-right: 20px;
 }
 
-nav a {
+nav ul li a {
   text-decoration: none;
-  color: #2c3e50; /* Dark Blue */
+  color: #333;
   font-weight: bold;
-  font-size: 1.2rem;
-  transition: color 0.3s ease-in-out;
 }
 
-nav a:hover {
-  color: #3498db; /* Highlight Blue on hover */
+/* Popup styles */
+.patient-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 300px;
 }
 
-.actions {
-  padding: 20px 0;
+.patient-popup h3 {
+  margin-top: 0;
 }
 
-.button {
-  display: inline-block;
-  padding: 12px 24px;
-  background-color: #000000;
+.patient-popup input {
+  width: calc(100% - 16px);
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.patient-popup button {
+  padding: 8px 16px;
+  background-color: #007bff;
   color: #fff;
-  text-decoration: none;
-  border-radius: 5px;
-  font-weight: bold;
-  font-size: 1.2rem;
-  transition: background-color 0.3s ease-in-out;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   margin-right: 10px;
 }
 
-.request-appointment {
-  background-color: #3498db; /* Blue */
+.patient-popup button:hover {
+  background-color: #0056b3;
 }
 
-.button:hover {
-  background-color: #2c3e50; /* Dark Blue on hover */
+.patient-popup .patient-error-msg {
+  color: red;
+  margin-top: 5px;
 }
 
-.appointments, .cabins, .wards {
-  padding: 20px 0;
+/* Patient information */
+.header {
+  background-color: #fff;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.header h2 {
+  margin-bottom: 10px;
 }
 
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+.patient-details {
+  display: flex;
+  align-items: center;
 }
 
-th {
-  background-color: #f2f2f2;
-  text-align: left;
-}
 
-tr:nth-child(even) {
-  background-color: #f2f2f2;
-}
 
-tr:hover {
-  background-color: #ddd;
-}
+/* Other styles for patient actions, appointments, cabins, wards, etc. can be added here */
 
+/* Footer */
 .footer {
   text-align: center;
-  padding: 20px 0;
-  background-color: #ecf0f1; /* Light Grey */
-}
-
-.footer p {
-  color: #2c3e50; /* Dark Blue */
+  margin-top: 20px;
+  padding: 10px 0;
+  background-color: #333;
+  color: #fff;
 }

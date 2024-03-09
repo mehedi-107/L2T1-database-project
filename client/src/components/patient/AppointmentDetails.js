@@ -1,37 +1,24 @@
 import React from 'react';
-
+import './AppointmentDetails.css';
 const AppointmentDetails = ({ appointments }) => {
+  console.log(appointments);
   return (
     <div className="appointments">
       <h3>Upcoming Appointments</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Appointment ID</th>
-            <th>Appointment Date</th>
-            <th>Doctor ID</th>
-            <th>Doctor Name</th>
-            <th>Email</th>
-            <th>Contact Number</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          {appointments.map((appointment) => (
-            <tr key={appointment.APPOINTMENT_ID}>
-              <td>{appointment.APPOINTMENT_ID}</td>
-              <td>{appointment.APPOINTMENT_DATE.split('T')[0]}</td>
-              <td>{appointment.DOCTOR_ID}</td>
-              <td>{`${appointment.FIRST_NAME} ${appointment.LAST_NAME}`}</td>
-              <td>{appointment.EMAIL}</td>
-              <td>{appointment.CONTACT_NO}</td>
-              <td>{appointment.START_TIME}</td>
-              <td>{appointment.end_time}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {appointments.map((appointment) => (
+        <div key={appointment.APPOINTMENT_ID} className="appointment-details">
+          <p><strong>Appointment ID:</strong> {appointment.APPOINTMENT_ID}</p>
+          <p><strong>Appointment Date:</strong> {appointment.APPOINTMENT_DATE.split('T')[0]}</p>
+          <p><strong>Doctor ID:</strong> {appointment.DOCTOR_ID}</p>
+          <p><strong>Doctor Name:</strong> {`${appointment.FIRST_NAME} ${appointment.LAST_NAME}`}</p>
+          <p><strong>Email:</strong> {appointment.EMAIL}</p>
+          <p><strong>Contact Number:</strong> {appointment.CONTACT_NO}</p>
+          <p><strong>Start Time:</strong> {appointment.START_TIME}</p>
+          <p><strong>End Time:</strong> {appointment.end_time}</p>
+          <p><strong>Reason:</strong> {appointment.REASON}</p>
+         <hr />
+        </div>
+      ))}
     </div>
   );
 };

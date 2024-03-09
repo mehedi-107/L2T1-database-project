@@ -126,10 +126,13 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-app.post("/changePassword", async (req, res) => {
+
+
+app.get("/changePassword/:userID/:currentPassword/:newPassword/:userType", async (req, res) => {
   try {
-    const { userID, currentPassword, newPassword, userType } = req.body;
-    console.log(req.body);
+    const { userID, currentPassword, newPassword, userType } = req.params; // Retrieve parameters from req.params
+    console.log(req.params);
+
     // Define the table name based on the user type
     let tableName;
     if (userType === 'doctor') {
@@ -139,19 +142,30 @@ app.post("/changePassword", async (req, res) => {
     } else if (userType === 'patient') {
       tableName = 'PATIENTS';
     } else {
+      console.log(userType);
       return res.status(400).json({ success: false, message: "Invalid user type." });
     }
 
     // Check if the current password is correct
     const user = await pool.query(`SELECT * FROM "${tableName}" WHERE "${userType.toUpperCase()}_ID" = $1 AND "PASSWORD" = $2`, [userID, currentPassword]);
-    if (user.rows.length === 0) {
-      return res.status(401).json({ success: false, message: "Current password is incorrect." });
+    
+    if(user.rows.length === 0) {  
+      console.log("Invalid current password");
+      const a="Invalid current password";
+      res.status(200).json({ success: true, message: "Password changed successfully", triggerMessage: a});
+      return;
     }
-    console.log(user.rows[0])
+    
+
     // Update the password
     await pool.query(`UPDATE "${tableName}" SET "PASSWORD" = $1 WHERE "${userType.toUpperCase()}_ID" = $2`, [newPassword, userID]);
-    console.log("Password changed successfully");
-    return res.status(200).json({ success: true, message: "Password changed successfully." });
+    
+    // Extract the message from the last row of "TRIGGER_MESSAGES" table
+    const triggerMsg = await pool.query(`SELECT "message" FROM "TRIGGER_MESSAGES" ORDER BY "id" DESC LIMIT 1`);
+    const message = triggerMsg.rows[0].message;
+
+    console.log(message);
+    res.status(200).json({ success: true, message: "Password changed successfully", triggerMessage: message });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ success: false, message: "Server error" });
@@ -190,7 +204,7 @@ app.get("/appointments", async (req, res) => {
       console.log("Patient",patientId);
       const currentDate = new Date().toISOString().split('T')[0]; // Get current date in 'YYYY-MM-DD' format
       const appointments = await pool.query(
-        'SELECT  A."APPOINTMENT_ID", A."APPOINTMENT_DATE", A."START_TIME", (A."START_TIME" + INTERVAL \'15 minutes\') AS END_TIME, D."DOCTOR_ID", D."FIRST_NAME", D."LAST_NAME", D."EMAIL", D."CONTACT_NO" FROM "APPOINTMENT" A JOIN "DOCTORS" D ON A."DOCTOR_ID" = D."DOCTOR_ID" WHERE A."PATIENT_ID" = $1 AND "APPOINTMENT_DATE" >= $2',
+        'SELECT  A."REASON",A."APPOINTMENT_ID", A."APPOINTMENT_DATE", A."START_TIME", (A."START_TIME" + INTERVAL \'15 minutes\') AS END_TIME, D."DOCTOR_ID", D."FIRST_NAME", D."LAST_NAME", D."EMAIL", D."CONTACT_NO" FROM "APPOINTMENT" A JOIN "DOCTORS" D ON A."DOCTOR_ID" = D."DOCTOR_ID" WHERE A."PATIENT_ID" = $1 AND "APPOINTMENT_DATE" >= $2',
         [patientId, currentDate]
       );
       
@@ -890,13 +904,67 @@ WHERE W."WARD_NO" = $1 AND W."FLOOR_NO" = $2 AND W."DATE" = $3;
 
 app.get('/cabinDetails/:cabinId', async (req, res) => {
   const { cabinId } = req.params;
-  //console.log(cabinId);
+  console.log(cabinId);
   try {
     floorNo = Math.floor(cabinId / 100);
-    cabinNo = cabinId % 100;
-    // Query the database to fetch cabin details by cabin ID
-    const cabinDetails = await pool.query('SELECT * FROM "CABIN" WHERE "FLOOR_NO" = $1 AND "CABIN_NO" = $2', [floorNo, cabinNo]); 
     
+    cabinNo = cabinId % 100;
+    console.log(floorNo, cabinNo);
+    // Query the database to fetch cabin details by cabin ID
+    const cabinDetails = await pool.query(`
+    SELECT
+      W."CABIN_NO" AS "CABIN_NO",
+      W."FLOOR_NO" AS "FLOOR_NO",
+      W."ADMISSION_REASON" AS "REASON",
+      W."PATIENT_ID" AS "PATIENT_ID",
+      W."DOCTOR_ID_DAY" AS "DOCTOR_ID_DAY",
+      W."DOCTOR_ID_NIGHT" AS "DOCTOR_ID_NIGHT",
+      W."CABIN_TYPE" AS "CABIN_TYPE",
+      W."NURSE_ID_1" AS "NURSE_ID_1",
+      W."NURSE_ID_2" AS "NURSE_ID_2",
+      D1."FIRST_NAME" AS "DAY_DOCTOR_FIRST_NAME",
+      D1."LAST_NAME" AS "DAY_DOCTOR_LAST_NAME",
+      D1."DEPT_ID" AS "DAY_DOCTOR_DEPT_ID",
+      D1."EMAIL" AS "DAY_DOCTOR_EMAIL",
+      D1."CONTACT_NO" AS "DAY_DOCTOR_CONTACT_NO",
+      D2."FIRST_NAME" AS "NIGHT_DOCTOR_FIRST_NAME",
+      D2."LAST_NAME" AS "NIGHT_DOCTOR_LAST_NAME",
+      D2."DEPT_ID" AS "NIGHT_DOCTOR_DEPT_ID",
+      D2."EMAIL" AS "NIGHT_DOCTOR_EMAIL",
+      D2."CONTACT_NO" AS "NIGHT_DOCTOR_CONTACT_NO",
+      P."FIRST_NAME" AS "PATIENT_FIRST_NAME",
+      P."LAST_NAME" AS "PATIENT_LAST_NAME",
+      P."GENDER" AS "PATIENT_GENDER",
+      P."EMAIL_ID" AS "PATIENT_EMAIL_ID",
+      P."CONTACT_NO" AS "PATIENT_CONTACT_NO",
+      N1."FIRST_NAME" AS "NURSE_1_FIRST_NAME",
+      N1."LAST_NAME" AS "NURSE_1_LAST_NAME",
+      N1."EMAIL_ID" AS "NURSE_1_EMAIL_ID",
+      N1."CONTACT_NO" AS "NURSE_1_CONTACT_NO",
+      N1."SHIFT" AS "NURSE_1_SHIFT",
+      N1."DEPT_ID" AS "NURSE_1_DEPT_ID",
+      N2."FIRST_NAME" AS "NURSE_2_FIRST_NAME",
+      N2."LAST_NAME" AS "NURSE_2_LAST_NAME",
+      N2."EMAIL_ID" AS "NURSE_2_EMAIL_ID",
+      N2."CONTACT_NO" AS "NURSE_2_CONTACT_NO",
+      N2."SHIFT" AS "NURSE_2_SHIFT",
+      N2."DEPT_ID" AS "NURSE_2_DEPT_ID"
+  FROM
+      "CABIN" AS W
+  LEFT JOIN
+      "DOCTORS" AS D1 ON W."DOCTOR_ID_DAY" = D1."DOCTOR_ID"
+  LEFT JOIN
+      "DOCTORS" AS D2 ON W."DOCTOR_ID_NIGHT" = D2."DOCTOR_ID"
+  LEFT JOIN
+      "PATIENTS" AS P ON W."PATIENT_ID" = P."PATIENT_ID"
+  LEFT JOIN
+      "NURSES" AS N1 ON W."NURSE_ID_1" = N1."NURSE_ID"
+  LEFT JOIN
+      "NURSES" AS N2 ON W."NURSE_ID_2" = N2."NURSE_ID"
+  WHERE
+      W."CABIN_NO" = $1 AND W."FLOOR_NO" = $2;
+  ` , [cabinNo, floorNo]); 
+    console.log(cabinDetails);
     if (cabinDetails.rows.length === 0) {
       return res.status(404).json({ message: 'Cabin not found' });
     }
@@ -974,8 +1042,9 @@ app.get('/availableNurses', async (req, res) => {
 // Route to handle updating cabin details
 app.put('/updateCabinDetails/:cabinId', async (req, res) => {
   const cabinId = req.params.cabinId;
-  const updatedDetails = req.body; // Contains the updated cabin details
 
+  const updatedDetails = req.body; // Contains the updated cabin details
+  console.log(cabinId, updatedDetails);
   try {
     // Perform any necessary validation here
 
@@ -992,6 +1061,7 @@ app.put('/updateCabinDetails/:cabinId', async (req, res) => {
       WHERE "CABIN_NO" = $5 AND "FLOOR_NO" = $6
     `;
     const { DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2 } = updatedDetails;
+    
     await pool.query(updateQuery, [DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2, cabinNo, floorNo]);
     //console.log("Updated cabin details: ", updatedDetails);
     //console.log(updatedDetails);
@@ -1391,10 +1461,365 @@ app.post('/leaveApplication', async (req, res) => {
 
 
 
+app.get('/displayLeaveApplications', async (req, res) => {
+  try {
+    const leaveApplications = await pool.query(`
+    SELECT *
+    FROM "LEAVE_REQUESTS" 
+    WHERE "APPROVAL" = 'Pending';
+    `);
+    res.json(leaveApplications.rows); 
+  }
+  
+  catch (error) {
+    console.error('Error fetching leave applications:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+app.get('/applicantInfo/:applicantId', async (req, res) => {  
+  try {
+    const { applicantId } = req.params;
+    console.log(applicantId);
+    if(Math.floor(applicantId/10000)==1){
+      const query = `
+      SELECT
+      "DOCTOR_ID" AS "STAFF_ID",
+      "FIRST_NAME",
+      "LAST_NAME",
+      "EMAIL",
+      "CONTACT_NO",
+      "SPECIALIZATION" AS "DEPARTMENT"
+      FROM "DOCTORS"
+      WHERE "DOCTOR_ID" = $1;
+      `;
+      const { rows } = await pool.query(query, [applicantId]);
+      res.json(rows[0]);
+    }
+    else if(Math.floor(applicantId/10000)==3){
+      const query = `
+      SELECT
+      "NURSE_ID" AS "STAFF_ID",
+      "FIRST_NAME",
+      "LAST_NAME",
+      "EMAIL_ID" AS "EMAIL",
+      "CONTACT_NO",
+      "DEPT_ID" AS "DEPARTMENT"
+      FROM "NURSES"
+      WHERE "NURSE_ID" = $1;
+      `;
+      const { rows } = await pool.query(query, [applicantId]);
+      res.json(rows[0]);
+    }
+    else{
+      res.status(404).json({ error: 'Staff information not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching applicant information:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+app.post('/manageDoctorLeave/:doctorId', async (req, res) => {
+  const { doctorId } = req.params;
+  try {
+    // Call the manage_doctor_leave function in the database
+    const result = await pool.query('SELECT * FROM manage_doctor_leave($1)', [doctorId]);
+    // Extract the message from the result
+    // Send the message as the response
+    const message = result.rows[0];
+    console.log(message);
+    res.send(message);
+  } catch (error) {
+    console.error('Error executing manage_doctor_leave:', error.message);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/manageNurseLeave/:nurseId', async (req, res) => {
+  const { nurseId } = req.params;
+  try {
+    // Call the manage_nurse_leave function in the database
+    const result = await pool.query('SELECT * FROM manage_nurse_leave($1)', [nurseId]);
+    // Extract the message from the result
+    const message = result.rows[0];
+    console.log(message);
+    res.send(message);
+  } catch (error) {
+    console.error('Error executing manage_nurse_leave:', error.message);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 
 
 
 
+// Define a route to handle patient checkout
+app.post('/checkout/:cabinId', async (req, res) => {
+  const { cabinId } = req.params;
+
+  
+  try {
+    // Call the checkout function in the database
+    const result = await pool.query('SELECT * FROM checkout($1)', [cabinId]);
+    // Extract the message from the result
+    const message = result.rows[0];
+    console.log(message);
+    res.send(message);
+  } catch (error) {
+    console.error('Error checking out patient:', error);
+    res.status(500).send('An error occurred while checking out the patient');
+  }
+});
+
+app.post('/rejection/:leaveId', async (req, res) => {
+  const { leaveId } = req.params;
+  try {
+    // Call the reject_leave function in the database
+    const result = await pool.query('SELECT * FROM reject_leave($1)', [leaveId]);
+    // Extract the message from the result
+    const message = result.rows[0];
+    console.log(message);
+    res.send(message);
+  } catch (error) {
+    console.error('Error rejecting leave application:', error);
+    res.status(500).send('An error occurred while rejecting the leave application');
+  }
+});
+
+app.post("/patientCabinCheckOut", async (req, res) => {
+  try {
+    const { patientId } = req.body;
+
+    // Find the cabin information for the patient
+    const cabinInfo = await pool.query(
+      `SELECT * FROM "CABIN" WHERE "PATIENT_ID" = $1`,
+      [patientId]
+    );
+
+    if (cabinInfo.rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Patient not found in any cabin." });
+    }
+
+    const cabin = cabinInfo.rows[0];
+
+    // Insert the cabin information into the cabin history table
+    await pool.query(
+      `INSERT INTO "CABIN_HISTORY" ("DATE", "CABIN_NO", "FLOOR_NO", "PATIENT_ID", "DOCTOR_ID_DAY", "DOCTOR_ID_NIGHT", "CABIN_TYPE", "NURSE_ID_1", "NURSE_ID_2") 
+      VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7, $8)`,
+      [cabin["CABIN_NO"], cabin["FLOOR_NO"], cabin["PATIENT_ID"], cabin["DOCTOR_ID_DAY"], cabin["DOCTOR_ID_NIGHT"], cabin["CABIN_TYPE"], cabin["NURSE_ID_1"], cabin["NURSE_ID_2"]]
+    );
+
+    // Update the cabin to set patient ID to NULL
+    await pool.query(
+      `UPDATE "CABIN" SET "PATIENT_ID" = NULL WHERE "PATIENT_ID" = $1`,
+      [patientId]
+    );
+    console.log("Patient checked out successfully.");
+    return res.status(200).json({ success: true, message: "Patient checked out successfully." });
+  } catch (error) {
+    console.error("Error checking out patient from cabin:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.post("/patientWardCheckOut", async (req, res) => {
+  try {
+    const { patientId } = req.body;
+    console.log("hgcf",patientId);
+    // Find the specific bed where the patient is located
+    const wardInfo = await pool.query(
+      `SELECT * FROM "WARD" WHERE $1 IN ("BED_1", "BED_2", "BED_3", "BED_4", "BED_5", "BED_6", "BED_7", "BED_8", "BED_9", "BED_10")`,
+      [patientId]
+    );
+
+    if (wardInfo.rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Patient not found in any ward." });
+    }
+    
+    const ward = wardInfo.rows[0];
+    console.log(ward);
+    let bedNumber;
+    
+    // Determine which bed the patient is in
+    if (ward.BED_1 == patientId) {
+      bedNumber = "BED_1";
+    } else if (ward.BED_2 == patientId) {
+      bedNumber = "BED_2";
+    }
+    else if (ward.BED_3 == patientId) {
+      bedNumber = "BED_3";
+    }
+    else if (ward.BED_4 == patientId) {
+      bedNumber = "BED_4";
+    }
+    else if (ward.BED_5 == patientId) {
+      bedNumber = "BED_5";
+    }
+    else if (ward.BED_6 == patientId) {
+      bedNumber = "BED_6";
+    }
+    else if (ward.BED_7 == patientId) {
+      bedNumber = "BED_7";
+    }
+    else if (ward.BED_8 == patientId) {
+      bedNumber = "BED_8";
+    }
+    else if (ward.BED_9 == patientId) {
+      bedNumber = "BED_9";
+    }
+    else if (ward.BED_10 == patientId) {
+      bedNumber = "BED_10";
+    }
+
+    console.log(bedNumber);
+    // Add conditions for BED_3 to BED_10 as needed
+
+    // Insert the ward information into the ward history table
+    await pool.query(
+      `INSERT INTO "WARD_HISTORY" ("DATE", "WARD_NO", "FLOOR_NO", "DOCTOR_ID_DAY", "DOCTOR_ID_NIGHT", "BED_1", "BED_2", "BED_3", "BED_4", "BED_5", "BED_6", "BED_7", "BED_8", "BED_9", "BED_10", "NURSE_ID_1", "NURSE_ID_2", "NURSE_ID_3", "NURSE_ID_4", "WARD_BOY_ID_1", "WARD_BOY_ID_2", "WARD_BOY_ID_3", "WARD_BOY_ID_4", "WARD_BOY_ID_5") 
+      VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
+      [ward["WARD_NO"], ward["FLOOR_NO"], ward["DOCTOR_ID_DAY"], ward["DOCTOR_ID_NIGHT"], ward["BED_1"], ward["BED_2"], ward["BED_3"], ward["BED_4"], ward["BED_5"], ward["BED_6"], ward["BED_7"], ward["BED_8"], ward["BED_9"], ward["BED_10"], ward["NURSE_ID_1"], ward["NURSE_ID_2"], ward["NURSE_ID_3"], ward["NURSE_ID_4"], ward["WARD_BOY_ID_1"], ward["WARD_BOY_ID_2"], ward["WARD_BOY_ID_3"], ward["WARD_BOY_ID_4"], ward["WARD_BOY_ID_5"]]
+    );
+
+    // Update the specific bed in the ward to set patient ID to NULL
+    await pool.query(
+      `UPDATE "WARD" SET "${bedNumber.toUpperCase()}" = NULL WHERE "WARD_NO" = $1 AND "FLOOR_NO" = $2`,
+      [ward["WARD_NO"], ward["FLOOR_NO"]]
+    );
+    console.log("Patient checked out of the ward successfully.");
+    return res.status(200).json({ success: true, message: "Patient checked out of the ward successfully." });
+  } catch (error) {
+    console.error("Error checking out patient from ward:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 
+app.post("/sendMessage", async (req, res) => {
+  try {
+    const { from, to, message } = req.body;
+
+    // Get the current date and time
+    const currentDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
+    const currentTime = new Date().toISOString().slice(11, 19); // HH:MM:SS format
+
+    // Insert the message into the "NOTIFICATIONS" table
+    await pool.query(
+      'INSERT INTO "NOTIFICATIONS" ("DATE", "TIME", "FROM", "TO", "MESSAGE") VALUES ($1, $2, $3, $4, $5)',
+      [currentDate, currentTime, from, to, message]
+    );
+
+    return res.status(200).json({ success: true, message: "Message sent successfully." });
+  } catch (error) {
+    console.error("Error sending message:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.post("/deleteMessage", async (req, res) => {
+  try {
+    const { date, time, from, to } = req.body;
+
+    // Delete the message from the "NOTIFICATIONS" table based on the provided parameters
+    await pool.query(
+      'DELETE FROM "NOTIFICATIONS" WHERE "DATE" = $1 AND "TIME" = $2 AND "FROM" = $3 AND "TO" = $4',
+      [date, time, from, to]
+    );
+
+    return res.status(200).json({ success: true, message: "Message deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting message:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/receivedMessages/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    console.log(userId);
+    // Calculate the lower bound date (7 days ago)
+    const lowerBoundDate = new Date();
+    lowerBoundDate.setDate(lowerBoundDate.getDate() - 7);
+
+    // Calculate the derived "TO" value for the user ID
+    const derivedToValue = Math.floor(userId / 10000) * 10000;
+
+    // Select all notifications from the table for the last 7 days
+    // where "TO" matches the user ID or derived "TO" value
+    const notifications = await pool.query(
+      `SELECT "DATE", "TIME", "FROM", "TO", "MESSAGE" FROM "NOTIFICATIONS" 
+      WHERE ("TO" = $1 OR "TO" = $2) AND "DATE" >= $3`,
+      [userId, derivedToValue, lowerBoundDate]
+    );
+    
+    // Map over the results to format the date
+    const formattedNotifications = notifications.rows.map(notification => {
+      // Get the date part in UTC
+      const utcDate = new Date(notification.DATE);
+      // Adjust the date to local timezone
+      const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
+      // Format the date as yyyy-mm-dd
+      const formattedDate = localDate.toISOString().split('T')[0];
+      return {
+        DATE: formattedDate,
+        TIME: notification.TIME,
+        FROM: notification.FROM,
+        TO: notification.TO,
+        MESSAGE: notification.MESSAGE
+      };
+    });
+    
+    // Return the formatted notifications
+    return res.status(200).json({ success: true, notifications: formattedNotifications });
+    
+  } catch (error) {
+    console.error("Error retrieving notifications:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+app.get("/sentMessages", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    // Calculate the lower bound date (7 days ago)
+    const lowerBoundDate = new Date();
+    lowerBoundDate.setDate(lowerBoundDate.getDate() - 7);
+
+    // Select all notifications from the table for the last 7 days
+    // where "TO" matches the user ID or derived "TO" value
+    const sentMessages = await pool.query(
+      `SELECT "DATE", "TIME", "FROM", "TO", "MESSAGE" FROM "NOTIFICATIONS" 
+      WHERE "FROM" = $1 AND "DATE" >= $2`,
+      [userId, lowerBoundDate]
+    );
+    
+    // Map over the results to format the date
+    const formattedSentMessages = sentMessages.rows.map(message => {
+      // Get the date part in UTC
+      const utcDate = new Date(message.DATE);
+      // Adjust the date to local timezone
+      const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
+      // Format the date as yyyy-mm-dd
+      const formattedDate = localDate.toISOString().split('T')[0];
+      return {
+        DATE: formattedDate,
+        TIME: message.TIME,
+        FROM: message.FROM,
+        TO: message.TO,
+        MESSAGE: message.MESSAGE
+      };
+    });
+    
+    // Return the formatted sent messages
+    return res.status(200).json({ success: true, sentMessages: formattedSentMessages });    
+  } catch (error) {
+    console.error("Error retrieving notifications:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});

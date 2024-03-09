@@ -29,7 +29,7 @@ const TaskList = (doctor) => {
   <ul>
     <li className="nav-item" onClick={() => setSelectedOption('ward')}>Ward Duty</li>
     <li className="nav-item" onClick={() => setSelectedOption('cabin')}>Cabin Duty</li>
-    <li className="nav-item" onClick={() => setSelectedOption('theatre')}>OT Duty</li>
+  
   </ul>
 </nav>
 

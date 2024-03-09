@@ -3,30 +3,47 @@ import { Link } from 'react-router-dom';
 import './Admin.css';
 import UpdateCabin from './UpdateCabin';
 import UpdateWard from './UpdateWard';
-import AssignPatientToWard from './AssignPatientToWard'; // Import the AssignPatientToWard component
-import AssignPatientToCabin from './AssignPatientToCabin'; // Import the AssignPatientToCabin component
+import AssignPatientToWard from './AssignPatientToWard';
+import AssignPatientToCabin from './AssignPatientToCabin';
+import Notification from './Notification'; // Import the Notification component
 import image1 from './logo2.png';
 import LeaveRequestList from './LeaveRequestList';
+
 const Admin = () => {
+  const [showLeaveRequests, setShowLeaveRequests] = useState(false);
   const [showUpdateCabin, setShowUpdateCabin] = useState(false);
   const [showUpdateWard, setShowUpdateWard] = useState(false);
-  const [showAssignToWard, setShowAssignToWard] = useState(false); // State for displaying AssignPatientToWard component
-  const [showAssignToCabin, setShowAssignToCabin] = useState(false); // State for displaying AssignPatientToCabin component
+  const [showAssignToWard, setShowAssignToWard] = useState(false);
+  const [showAssignToCabin, setShowAssignToCabin] = useState(false);
+  const [showNotification, setShowNotification] = useState(false); // State to control the visibility of the notification
+
+  const handleLeaveRequestsClick = () => {
+    setShowLeaveRequests(!showLeaveRequests);
+  };
 
   const handleCardClick = () => {
-    setShowUpdateCabin(true);
+    setShowUpdateCabin(!showUpdateCabin);
   };
 
   const handleWardClick = () => {
-    setShowUpdateWard(true);
+    setShowUpdateWard(!showUpdateWard);
   };
 
   const handleAssignToWardClick = () => {
-    setShowAssignToWard(true);
+    setShowAssignToWard(!showAssignToWard);
   };
 
   const handleAssignToCabinClick = () => {
-    setShowAssignToCabin(true);
+    setShowAssignToCabin(!showAssignToCabin);
+  };
+
+  const handleNotificationClose = () => {
+    setShowNotification(false);
+  };
+
+  // Function to trigger the notification
+  const triggerNotification = () => {
+    setShowNotification(true);
   };
 
   return (
@@ -37,35 +54,44 @@ const Admin = () => {
         </div>
         <nav>
           <Link to="/">Logout</Link>
+          {/* Display the notification trigger */}
+          <button onClick={triggerNotification}>Show Notification</button>
         </nav>
       </header>
+      {/* Conditionally render the notification */}
+      {showNotification && (
+        <Notification message="This is a notification message" onClose={handleNotificationClose} />
+      )}
       <div className="admin-container">
         <h2>Welcome Admin!</h2>
         <div className="leave-requests">
-        <LeaveRequestList />
-      </div>
+          <div className="leave-requests-card" onClick={handleLeaveRequestsClick}>
+            <h4>Leave Requests</h4>
+          </div>
+          {showLeaveRequests && <LeaveRequestList />}
+        </div>
         <div className="view-cabin-details">
-          <h3>View Cabin Details</h3>
           <div className="cabin-card" onClick={handleCardClick}>
             <h4>Cabin Details</h4>
           </div>
           {showUpdateCabin && <UpdateCabin />}
         </div>
         <div className="view-ward-details">
-          <h3>View Ward Details</h3>
           <div className="ward-card" onClick={handleWardClick}>
             <h4>Ward Details</h4>
           </div>
           {showUpdateWard && <UpdateWard />}
         </div>
         <div className="assign-to-ward">
-          <h3>Assign Patient to Ward</h3>
-          <button onClick={handleAssignToWardClick}>Assign</button>
+          <div className="assign-to-ward-card" onClick={handleAssignToWardClick}>
+            <h4>Assign Patient to Ward</h4>
+          </div>
           {showAssignToWard && <AssignPatientToWard />}
         </div>
         <div className="assign-to-cabin">
-          <h3>Assign Patient to Cabin</h3>
-          <button onClick={handleAssignToCabinClick}>Assign</button>
+          <div className="assign-to-cabin-card" onClick={handleAssignToCabinClick}>
+            <h4>Assign Patient to Cabin</h4>
+          </div>
           {showAssignToCabin && <AssignPatientToCabin />}
         </div>
       </div>

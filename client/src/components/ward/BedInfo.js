@@ -42,28 +42,46 @@ const BedInfo = () => {
     };
 
     // Function to handle patient checkout
-    const handleCheckout = async () => {
-        try {
-            const response = await fetch(`http://localhost:5000/checkout/${selectedBed}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Failed to check out patient');
-            }
-            // After successful checkout, reset the state and fetch data for the bed
-            setSelectedBed(null);
-            setLoading(true);
-            setWardHistory([]);
-            setPatientInfo(null);
-            fetchWardHistory(selectedBed);
-            fetchPatientInfo(selectedBed);
-        } catch (error) {
-            console.error('Error checking out patient:', error);
+    // Function to handle patient checkout
+const handleCheckout = async () => {
+    try {
+        const confirmed = window.confirm('Are you sure you want to check out the patient?');
+        if (!confirmed) {
+            return; // Do nothing if the user cancels the confirmation
         }
-    };
+
+        const response = await fetch('http://localhost:5000/patientWardCheckOut', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ patientId: selectedBed }),
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to check out patient');
+        }
+
+        // After successful checkout, reset the state and fetch data for the bed
+        setSelectedBed(null);
+        setLoading(true);
+        setWardHistory([]);
+        setPatientInfo(null);
+
+        // Reset URL parameter
+        const url = new URL(window.location);
+        url.searchParams.delete('selectedBed');
+        window.history.pushState({}, '', url);
+
+        fetchWardHistory(selectedBed);
+        fetchPatientInfo(selectedBed);
+    } catch (error) {
+        console.error('Error checking out patient:', error);
+    }
+};
+
+    
 
     useEffect(() => {
         // Parse query parameters from the URL

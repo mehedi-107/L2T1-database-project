@@ -1,0 +1,54 @@
+/* UpdateCabin.css */
+.cabin-card {
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .cabin-card h3 {
+    margin-bottom: 15px;
+  }
+  
+  .cabin-card input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .cabin-card button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .cabin-card button:hover {
+    background-color: #0056b3;
+  }
+  
+  .cabin-card p {
+    margin-bottom: 10px;
+  }
+  
+  .cabin-card select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .cabin-card span {
+    font-weight: bold;
+  }
+  
+  .cabin-card button:not(:last-child) {
+    margin-right: 10px;
+  }
+  

@@ -1,0 +1,33 @@
+.patient-details {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .patient-image {
+    width: 100px; /* adjust width as needed */
+    height: 100px; /* adjust height as needed */
+    border-radius: 50%; /* to make it a circle */
+    overflow: hidden;
+    margin-right: 20px;
+  }
+  
+  .patient-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* to make sure the image covers the entire area */
+  }
+  
+  .patient-info {
+    flex-grow: 1; /* take remaining space */
+  }
+  
+  .info-item {
+    margin-bottom: 10px;
+  }
+  
+  .info-item span {
+    font-weight: bold;
+    margin-right: 5px;
+  }
+  

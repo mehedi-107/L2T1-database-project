@@ -1,0 +1,125 @@
+/* LeaveRequestList.css */
+
+.lr-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+.lr-container h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.LR {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.LR p {
+  margin-bottom: 10px;
+}
+
+.LR button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.LR button:hover {
+  background-color: #0056b3;
+}
+
+.LR div {
+  margin-top: 10px;
+}
+
+.confirmation-modal {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirmation-modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.confirmation-modal p {
+  margin-bottom: 10px;
+}
+
+.confirmation-modal input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.confirmation-modal button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-right: 10px;
+}
+
+.confirmation-modal button:hover {
+  background-color: #0056b3;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  margin: 0 5px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pagination button:hover {
+  background-color: #0056b3;
+}
+.server-message-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border: 1px solid black;
+  z-index: 9999;
+}
+
+.server-message-content {
+  text-align: center;
+}
+
+.server-message-modal button {
+  margin-top: 10px;
+}
