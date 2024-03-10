@@ -1,11 +1,12 @@
+/* BedInfo.css */
+
 .bed-info-container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    border-radius: 5px;
     background-color: #f9f9f9;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
@@ -13,45 +14,18 @@ h2 {
     margin-bottom: 20px;
 }
 
-.patient-info {
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-}
-
-.patient-info p {
-    margin: 5px 0;
-}
-
-.pagination {
-    margin-top: 20px;
-}
-
-.pagination button {
-    padding: 8px 16px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.3s;
-}
-
-.pagination button:hover {
-    background-color: #0056b3;
+.loading {
+    font-style: italic;
+    color: #666;
 }
 
 .ward-history-container {
-    margin-top: 40px;
+    margin-top: 20px;
 }
 
-h3 {
+.ward-history-container h3 {
     font-size: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 ul {
@@ -59,24 +33,104 @@ ul {
     padding: 0;
 }
 
-ul li {
-    margin-bottom: 15px;
-    padding: 15px;
-    background-color: #f2f2f2;
-    border-radius: 8px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-}
-
-.staff-info {
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-}
-
-.staff-info h4 {
-    font-size: 18px;
+li {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
     margin-bottom: 10px;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 5px 10px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th,
+table td {
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+table th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f0f0f0;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+
+/* BedInfo.css */
+
+/* Message sending section */
+.message-section {
+    margin-top: 20px;
+}
+
+.message-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: vertical; /* Allow vertical resizing */
+}
+
+.send-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+}
+
+.send-button:hover {
+    background-color: #0056b3;
 }

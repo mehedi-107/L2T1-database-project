@@ -1,0 +1,46 @@
+.add-doctor-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+  
+  .add-doctor-form h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 24px;
+  }
+  
+  .add-doctor-form label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .add-doctor-form input[type="text"],
+  .add-doctor-form input[type="number"],
+  .add-doctor-form input[type="email"],
+  .add-doctor-form input[type="password"],
+  .add-doctor-form input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  
+  .add-doctor-form button {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .add-doctor-form button:hover {
+    background-color: #45a049;
+  }
+  

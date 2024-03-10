@@ -1,7 +1,28 @@
 import React from 'react';
 import './AppointmentDetails.css';
-const AppointmentDetails = ({ appointments }) => {
-  console.log(appointments);
+
+const AppointmentDetails = ({ appointments, onCancelAppointment }) => {
+  const handleCancelAppointment = async (appointmentId) => {
+    const isConfirmed = window.confirm('Are you sure you want to cancel this appointment?');
+    if (isConfirmed) {
+      try {
+        const response = await fetch(`http://localhost:5000/cancelAppointment/${appointmentId}`, {
+          method: 'POST'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to cancel appointment');
+        }
+        // Assume the server response contains a success message
+        const data = await response.json();
+        console.log(data.message); // Log success message
+        // Call onCancelAppointment callback to update the UI
+        onCancelAppointment(appointmentId);
+      } catch (error) {
+        console.error('Error cancelling appointment:', error);
+      }
+    }
+  };
+
   return (
     <div className="appointments">
       <h3>Upcoming Appointments</h3>
@@ -16,7 +37,8 @@ const AppointmentDetails = ({ appointments }) => {
           <p><strong>Start Time:</strong> {appointment.START_TIME}</p>
           <p><strong>End Time:</strong> {appointment.end_time}</p>
           <p><strong>Reason:</strong> {appointment.REASON}</p>
-         <hr />
+          <button onClick={() => handleCancelAppointment(appointment.APPOINTMENT_ID)}>Cancel</button>
+          <hr />
         </div>
       ))}
     </div>

@@ -1,0 +1,40 @@
+/* DoctorInfo.css */
+
+.doctor-info {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 30px;
+  display: flex;
+}
+
+.doctor-profile-picture {
+  margin-right: 20px;
+}
+
+.doctor-profile-picture img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-personal-details {
+  flex-grow: 1;
+}
+
+.doctor-info-item {
+  margin-bottom: 10px;
+}
+
+.doctor-info-label {
+  font-weight: bold;
+  color: #555;
+  margin-right: 5px;
+}
+
+.doctor-info-value {
+  color: #333;
+}

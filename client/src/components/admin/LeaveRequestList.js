@@ -62,29 +62,43 @@ const LeaveRequestList = () => {
     }
     setConfirmApproveId(null);
   };
+
   const handleReject = async (id) => {
     setConfirmRejectId(id);
   };
 
   const confirmRejectAction = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/rejectLeaveApplication/${confirmRejectId}`, {  
-        method: 'DELETE',
+      const response = await fetch(`http://localhost:5000/rejectApplication/${confirmRejectId}`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+          // Include optional rejection message if provided
+          message: rejectMessage.trim() || 'Leave application rejected' // Default message if no custom message provided
+        })
       });
+      
       if (!response.ok) {
-        throw new Error('Failed to reject leave');
+        throw new Error('Failed to reject leave application');
       }
+      
+      // Update the UI with the server response
+      const data = await response.json();
+      setServerMessage(data.message);
+      
       // Send notification to staff member
-     sendMessage(confirmRejectId, rejectMessage);
+      sendMessage(confirmRejectId, 'Your leave application has been rejected');
+  
+      // Reset confirmation modal and rejection message
+      setConfirmRejectId(null);
+      setRejectMessage('');
     } catch (error) {
       console.error('Error rejecting leave:', error);
     }
-    setConfirmRejectId(null);
-    setRejectMessage('');
   };
+  
 
   const sendMessage = async (applicantId, message) => {
     try {

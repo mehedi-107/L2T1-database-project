@@ -30,9 +30,9 @@ const AssignPatientToCabin = () => {
         }
       });
       const message = await response.text();
-      setPopupMessage(message); // Set the popup message
+      setPopupMessage(message); 
       
-      // Clear the input fields
+      
       setPatientId('');
       setCabinType('');
     } catch (error) {

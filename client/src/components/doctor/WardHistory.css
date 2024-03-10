@@ -29,3 +29,46 @@
 .nurse-info-table td:nth-child(even) {
     text-align: right;
 }
+
+
+.beds-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    overflow: hidden; /* Ensure the container wraps its children */
+}
+
+.left-beds,
+.right-beds {
+    width: calc(50% - 5px); /* Adjust as needed and consider margin/padding */
+}
+
+.bed-info-card {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.bed-info-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.bed-info-card h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.bed-info-card p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.bed-info-card.no-patient {
+    color: #888;
+}

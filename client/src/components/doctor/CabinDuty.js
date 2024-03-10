@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './CabinDuty.css'; // Import CSS file for styling
-import CancelModal from './CancelModal'; // Import the CancelModal component
 import ActivityCard from './ActivityCard'; // Import the ActivityCard component
 
 const CabinDuty = ({ doctor }) => {
@@ -33,6 +32,7 @@ const CabinDuty = ({ doctor }) => {
                 setActivities(activitiesData);
                 console.log(activitiesData);
                 setCabinDuty(cabinDutyData);
+                console.log(cabinDutyData);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -52,6 +52,28 @@ const CabinDuty = ({ doctor }) => {
     const incrementInterval = () => {
         setInterval(interval + 1);
     };
+    const handleCheckout = async (cabinId) => {
+        try {
+            const response = await fetch(`http://localhost:5000/checkout/${cabinId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cabinId: cabinId
+                })
+            });
+            if (!response.ok) {
+                throw new Error('Failed to checkout');
+            }
+            // Assuming the server response contains a success message
+            const data = await response.json();
+            console.log(data.message); // Log success message
+        } catch (error) {
+            console.error('Error during checkout:', error);
+        }
+    };
+    
 
     const formatActivityDate = (dateString) => {
         const date = new Date(dateString);
@@ -148,11 +170,14 @@ const CabinDuty = ({ doctor }) => {
                                     </tr>
                                 </tbody>
                             </table>
+                            <button className="checkout-button" onClick={() => handleCheckout(cabin.CABIN_NO+cabin.FLOOR_NO*100)}>Checkout</button>
+
                         </div>
                     ))}
                 </div>
-            )}
 
+            )}
+   
            <h2>Doctor Recent Activities in Cabin</h2>
             <div className="interval-selector">
                 <button onClick={decrementInterval}>-</button>
@@ -176,6 +201,9 @@ const CabinDuty = ({ doctor }) => {
                 <button onClick={prevPage} disabled={currentPage === 1}>Previous</button>
                 <button onClick={nextPage} disabled={indexOfLastActivity >= activities.length}>Next</button>
             </div>
+
+            {/* Checkout button */}
+            
         </div>
     );
 };

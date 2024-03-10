@@ -250,7 +250,7 @@ const BedInfoAdmin = () => {
                                 <button onClick={() => paginate(currentPage + 1)} disabled={indexOfLastItem >= wardHistory.length}>Next</button>
                             </div>
                             {/* Checkout button */}
-                            <button onClick={handleCheckout}>Check Out</button>
+                            
                         </div>
                     ) : (
                         <p>No ward history found for this bed.</p>

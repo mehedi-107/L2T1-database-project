@@ -95,3 +95,16 @@ h2 {
 .footer a:hover {
   color: #ddd;
 }
+
+/* AddDoctor.css */
+.add-doctor-section {
+  margin-bottom: 40px;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+.employee-management{
+  margin-bottom: 40px;
+  background-color: #f0f0f0;
+  padding: 20px;
+}

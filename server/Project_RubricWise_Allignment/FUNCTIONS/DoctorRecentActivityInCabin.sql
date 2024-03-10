@@ -1,0 +1,25 @@
+CREATE OR REPLACE FUNCTION "public"."getdoctoractivitiesincabin"("DOCTOR_ID_IN" int4, "TIMEFRAME_IN" interval)
+  RETURNS TABLE("DATE" timestamp, "DOCTOR_NAME" varchar, "PATIENT_NAMES" _varchar, "NURSE_NAMES" _varchar, "CABIN_ID" int4) AS $BODY$
+BEGIN
+    RETURN QUERY
+    SELECT
+        ch."DATE"::TIMESTAMP,
+        CAST(CONCAT(d."FIRST_NAME", ' ', d."LAST_NAME") AS VARCHAR) AS "DOCTOR_NAME",
+        ARRAY(
+            SELECT CAST(CONCAT(p."FIRST_NAME", ' ', p."LAST_NAME") AS VARCHAR)
+            FROM "PATIENTS" p
+            WHERE p."PATIENT_ID" IN (ch."PATIENT_ID")
+        ) AS "PATIENT_NAMES",
+        ARRAY(
+            SELECT CAST(CONCAT(n."FIRST_NAME", ' ', n."LAST_NAME") AS VARCHAR)
+            FROM "NURSES" n
+            WHERE n."NURSE_ID" IN (ch."NURSE_ID_1", ch."NURSE_ID_2")
+        ) AS "NURSE_NAMES",(ch."CABIN_NO"+ch."FLOOR_NO"*100) AS "CABIN_ID"
+    FROM "CABIN_HISTORY" ch
+    JOIN "DOCTORS" d ON (ch."DOCTOR_ID_DAY" = d."DOCTOR_ID" OR ch."DOCTOR_ID_NIGHT" = d."DOCTOR_ID") AND d."DOCTOR_ID" = "DOCTOR_ID_IN"
+    AND ch."DATE" >= CURRENT_TIMESTAMP - "TIMEFRAME_IN";
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000

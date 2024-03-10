@@ -6,7 +6,7 @@ const Login = ({ onLoginSuccess }) => {
   const [userID, setUserID] = useState('');
   const [password, setPassword] = useState('');
 
-  // Use useNavigate hook to get the navigate function
+  
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -31,8 +31,6 @@ const Login = ({ onLoginSuccess }) => {
       if (response.ok) {
         const user = await response.json();
         onLoginSuccess(user);
-
-        // Use navigate('/doctor') for navigation
         navigate('/doctor');
       } else {
         console.log('Invalid user ID or password');

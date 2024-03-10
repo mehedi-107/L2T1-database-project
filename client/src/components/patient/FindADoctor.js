@@ -93,7 +93,7 @@ function FindADoctor({ patient }) {
         <h2>Find a Doctor</h2>
         <form>
           <div className="form-group">
-            <label htmlFor="department">Department:</label>
+            <label htmlFor="department1">Department:</label>
             <select className='department-select' id="department" value={selectedDepartment} onChange={handleDepartmentChange}>
               <option value="">-- Select Department --</option>
               {departments.map(department => (

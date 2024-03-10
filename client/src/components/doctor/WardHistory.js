@@ -88,7 +88,7 @@ const WardHistory = ({ entry }) => {
                     </table>
                 </div>
             </div>
-            <div className="beds-container">
+            <div className="beds-container1">
     <div className="left-beds">
         {Object.entries(entry)
             .filter(([key]) => key.startsWith('BED_'))

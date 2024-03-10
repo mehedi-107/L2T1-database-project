@@ -1,4 +1,5 @@
 import React from 'react';
+import './BedHistoryCard.css';
 const BedHistorCard = ({ bedNumber, bedValue, viewedBy }) => { 
     console.log(bedNumber, bedValue);
     console.log(viewedBy);  

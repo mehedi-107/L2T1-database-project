@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const pool = require("./db");
-const { addDays, format, addMinutes } = require('date-fns');
+const { addDays, format, addMinutes, max } = require('date-fns');
 
 app.use(cors());
 app.use(express.json());
@@ -13,21 +13,16 @@ app.listen(5000, () => {
 
 app.get('/doctors', async (req, res) => {
   try {
-    // Query the database to fetch doctors' data
-    const doctors = await pool.query('SELECT * FROM "DOCTORS"'); // Adjust SQL query according to your database schema
-   // console.log(doctors.rows);
-    // Send the fetched doctors' data as JSON response
+    
+    const doctors = await pool.query('SELECT * FROM "DOCTORS"'); 
     res.json(doctors.rows);
   } catch (error) {
-    // Handle errors if any
     console.error('Error fetching doctors:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-
 app.post("/login", async (req, res) => {
-  // ... (copy your login route from index.js)
   try {
     const { userID, password } = req.body;
     console.log(userID);
@@ -76,6 +71,276 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.get("/userInfo", async (req, res) => {
+  try {
+    const { userID } = req.query;
+    console.log(userID);
+    const user = await pool.query('SELECT * FROM "DOCTORS" WHERE "ID" = $1', [userID]);
+    //console.log(user.rows[0]);
+    res.json(user.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/lastUserID", async (req, res) => {
+  try {
+    const lastUserID = await pool.query('SELECT MAX("PATIENT_ID") FROM "PATIENTS"');
+    //console.log(lastUserID.rows[0]);
+    res.json(lastUserID.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get('/allocatedCabins', async (req, res) => {
+  try {
+    const { patientId } = req.query;
+    //console.log(patientId);
+    const query = `
+      SELECT *
+      FROM "CABIN"
+      WHERE "PATIENT_ID" = $1;
+    `;
+
+    const result = await pool.query(query, [patientId]);
+    res.json(result.rows);
+    //console.log(result.rows);
+  } catch (error) {
+    console.error('Error fetching allocated cabins:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.get('/allocatedWards', async (req, res) => {
+  const { patientId } = req.query;
+
+  try {
+    //console.log(patientId, "patientId");
+    const result = await pool.query(
+      'SELECT * FROM "WARD" WHERE $1 IN ( "BED_1", "BED_2", "BED_3", "BED_4", "BED_5", "BED_6", "BED_7", "BED_8", "BED_9", "BED_10" )',
+      [patientId]
+    );
+
+    res.json(result.rows);
+    //console.log(result.rows);
+  } catch (error) {
+    console.error('Error executing query:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/departments', async (req, res) => {
+  try {
+    console.log("departments");
+    const result = await pool.query('SELECT * FROM "DEPARTMENTS"');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching departments:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/cabinTypes', async (req, res) => {  
+  try {
+    const cabinTypes = await pool.query('SELECT DISTINCT "CABIN_TYPE" FROM "CABIN"');
+    res.json(cabinTypes.rows);
+  } catch (error) {
+    console.error('Error fetching cabin types:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/displayLeaveApplications', async (req, res) => {
+  try {
+    const leaveApplications = await pool.query(`
+    SELECT *
+    FROM "LEAVE_REQUESTS" 
+    WHERE "APPROVAL" = 'Pending';
+    `);
+    res.json(leaveApplications.rows); 
+  }
+  
+  catch (error) {
+    console.error('Error fetching leave applications:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+app.get('/applicantInfo/:applicantId', async (req, res) => {  
+  try {
+    const { applicantId } = req.params;
+    console.log(applicantId);
+    if(Math.floor(applicantId/10000)==1){
+      const query = `
+      SELECT
+      "DOCTOR_ID" AS "STAFF_ID",
+      "FIRST_NAME",
+      "LAST_NAME",
+      "EMAIL",
+      "CONTACT_NO",
+      "SPECIALIZATION" AS "DEPARTMENT"
+      FROM "DOCTORS"
+      WHERE "DOCTOR_ID" = $1;
+      `;
+      const { rows } = await pool.query(query, [applicantId]);
+      res.json(rows[0]);
+    }
+    else if(Math.floor(applicantId/10000)==3){
+      const query = `
+      SELECT
+      "NURSE_ID" AS "STAFF_ID",
+      "FIRST_NAME",
+      "LAST_NAME",
+      "EMAIL_ID" AS "EMAIL",
+      "CONTACT_NO",
+      "DEPT_ID" AS "DEPARTMENT"
+      FROM "NURSES"
+      WHERE "NURSE_ID" = $1;
+      `;
+      const { rows } = await pool.query(query, [applicantId]);
+      res.json(rows[0]);
+    }
+    else{
+      res.status(404).json({ error: 'Staff information not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching applicant information:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get("/receivedMessages/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    console.log(userId);
+    // Calculate the lower bound date (7 days ago)
+    const lowerBoundDate = new Date();
+    lowerBoundDate.setDate(lowerBoundDate.getDate() - 7);
+
+   
+    const derivedToValue = Math.floor(userId / 10000) * 10000;
+    const notifications = await pool.query(
+      `SELECT "DATE", "TIME", "FROM", "TO", "MESSAGE" FROM "NOTIFICATIONS" 
+      WHERE ("TO" = $1 OR "TO" = $2) AND "DATE" >= $3`,
+      [userId, derivedToValue, lowerBoundDate]
+    );
+    
+    const formattedNotifications = notifications.rows.map(notification => {
+      const utcDate = new Date(notification.DATE);
+      const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
+      const formattedDate = localDate.toISOString().split('T')[0];
+      return {
+        DATE: formattedDate,
+        TIME: notification.TIME,
+        FROM: notification.FROM,
+        TO: notification.TO,
+        MESSAGE: notification.MESSAGE
+      };
+    });
+    
+    return res.status(200).json({ success: true, notifications: formattedNotifications });
+    
+  } catch (error) {
+    console.error("Error retrieving notifications:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+app.get("/sentMessages", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const lowerBoundDate = new Date();
+    lowerBoundDate.setDate(lowerBoundDate.getDate() - 7);
+    const sentMessages = await pool.query(
+      `SELECT "DATE", "TIME", "FROM", "TO", "MESSAGE" FROM "NOTIFICATIONS" 
+      WHERE "FROM" = $1 AND "DATE" >= $2`,
+      [userId, lowerBoundDate]
+    );
+    
+    const formattedSentMessages = sentMessages.rows.map(message => {
+      const utcDate = new Date(message.DATE);
+      const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
+      const formattedDate = localDate.toISOString().split('T')[0];
+      return {
+        DATE: formattedDate,
+        TIME: message.TIME,
+        FROM: message.FROM,
+        TO: message.TO,
+        MESSAGE: message.MESSAGE
+      };
+    });
+    
+    return res.status(200).json({ success: true, sentMessages: formattedSentMessages });    
+  } catch (error) {
+    console.error("Error retrieving notifications:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get('/doctors', async (req, res) => {
+  const { department } = req.query;
+
+  try {
+    console.log(department);
+    const result = await pool.query('SELECT * FROM "DOCTORS" JOIN "DEPARTMENTS" ON "DEPT_ID"="DEPARTMENT_ID" WHERE "DEPARTMENT_NAME"=$1', [department]);
+    res.json(result.rows);
+    //console.log(result.rows);
+  } catch (error) {
+    console.error('Error fetching doctors:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/availableTimeSlots', async (req, res) => {
+  try {
+    const { doctor, date } = req.query;
+    let startTime = '08:00:00';
+    let endTime = '12:00:00';
+    if (doctor > 10100) {
+      startTime = '18:00:00';
+      endTime = '22:00:00';
+    }
+    const query = `
+      SELECT "START_TIME" 
+      FROM "APPOINTMENT"
+      WHERE "DOCTOR_ID" = $1 
+      AND "APPOINTMENT_DATE" = $2
+      ORDER BY "START_TIME";
+    `;
+
+    const result = await pool.query(query, [doctor, date]);
+
+    const occupiedTimeSlots = new Set(result.rows.map(row => row.START_TIME));
+    const availableTimeSlots = [];
+    let currentTime = new Date(`${date} ${startTime}`);
+
+    while (currentTime < new Date(`${date} ${endTime}`)) {
+      const timeSlot = format(currentTime, 'HH:mm:ss');
+
+      if (!occupiedTimeSlots.has(timeSlot)) {
+        const dateTimeSlot = {
+          date,
+          time: timeSlot,
+        };
+
+        availableTimeSlots.push(dateTimeSlot);
+      }
+
+      currentTime = addMinutes(currentTime, 15);
+    }
+
+    res.json(availableTimeSlots);
+  } catch (error) {
+    console.error('Error fetching available time slots:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.post("/signup", async (req, res) => {
   try {
@@ -127,13 +392,232 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+app.post('/submitAppointment', async (req, res) => {
+  try {
+    const { doctor, time, date, patientId } = req.body;
+
+    console.log('Received appointment data:', req.body);
+    const selectMaxAppointmentIdQueryFromMedicalRecord = `
+      SELECT MAX("APPOINTMENT_ID") as max_id FROM "MEDICAL_RECORD_PATIENT";
+    `;
+
+    const maxIdResultFromMedicalRecord = await pool.query(selectMaxAppointmentIdQueryFromMedicalRecord);
+
+    //console.log(maxIdResultFromMedicalRecord.rows[0].max_id);
+    const nextAppointmentId = maxIdResultFromMedicalRecord.rows[0].max_id + 1;
+
+   
+    const insertAppointmentQuery = `
+      INSERT INTO "APPOINTMENT" ("APPOINTMENT_ID", "DOCTOR_ID", "APPOINTMENT_DATE", "START_TIME", "PATIENT_ID")
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *;
+    `;
+
+    const result = await pool.query(insertAppointmentQuery, [nextAppointmentId, doctor, date, time, patientId]);
+    
+    res.json({ success: true, appointment: result.rows[0] });
+  } catch (error) {
+    console.error('Error submitting appointment:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/leaveApplication', async (req, res) => {
+  const { staffId, startDate, endDate, reason } = req.body;
+
+  try {
+    const insertQuery = `
+      INSERT INTO "LEAVE_REQUESTS" ("APPLICANT_ID", "REASON_FOR_LEAVE", "START_DATE", "END_DATE")
+      VALUES ($1, $2, $3, $4)
+    `;
+    await pool.query(insertQuery, [staffId, reason, startDate, endDate]);
+    console.log("Leave application submitted successfully");
+    res.status(200).send('Leave application submitted successfully');
+  } catch (error) {
+    console.error('Error submitting leave application:', error);
+    res.status(500).send('An error occurred while processing the request');
+  }
+});
+
+app.post("/patientCabinCheckOut", async (req, res) => {
+  try {
+    const { patientId } = req.body;
+
+    const cabinInfo = await pool.query(
+      `SELECT * FROM "CABIN" WHERE "PATIENT_ID" = $1`,
+      [patientId]
+    );
+
+    if (cabinInfo.rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Patient not found in any cabin." });
+    }
+
+    const cabin = cabinInfo.rows[0];
+
+    await pool.query(
+      `INSERT INTO "CABIN_HISTORY" ("DATE", "CABIN_NO", "FLOOR_NO", "PATIENT_ID", "DOCTOR_ID_DAY", "DOCTOR_ID_NIGHT", "CABIN_TYPE", "NURSE_ID_1", "NURSE_ID_2") 
+      VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7, $8)`,
+      [cabin["CABIN_NO"], cabin["FLOOR_NO"], cabin["PATIENT_ID"], cabin["DOCTOR_ID_DAY"], cabin["DOCTOR_ID_NIGHT"], cabin["CABIN_TYPE"], cabin["NURSE_ID_1"], cabin["NURSE_ID_2"]]
+    );
+
+    await pool.query(
+      `UPDATE "CABIN" SET "PATIENT_ID" = NULL WHERE "PATIENT_ID" = $1`,
+      [patientId]
+    );
+    console.log("Patient checked out successfully.");
+    return res.status(200).json({ success: true, message: "Patient checked out successfully." });
+  } catch (error) {
+    console.error("Error checking out patient from cabin:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.post("/patientWardCheckOut", async (req, res) => {
+  try {
+    const { patientId } = req.body;
+    console.log("hgcf",patientId);
+    const wardInfo = await pool.query(
+      `SELECT * FROM "WARD" WHERE $1 IN ("BED_1", "BED_2", "BED_3", "BED_4", "BED_5", "BED_6", "BED_7", "BED_8", "BED_9", "BED_10")`,
+      [patientId]
+    );
+
+    if (wardInfo.rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Patient not found in any ward." });
+    }
+    
+    const ward = wardInfo.rows[0];
+    console.log(ward);
+    let bedNumber;
+
+    if (ward.BED_1 == patientId) {
+      bedNumber = "BED_1";
+    } else if (ward.BED_2 == patientId) {
+      bedNumber = "BED_2";
+    }
+    else if (ward.BED_3 == patientId) {
+      bedNumber = "BED_3";
+    }
+    else if (ward.BED_4 == patientId) {
+      bedNumber = "BED_4";
+    }
+    else if (ward.BED_5 == patientId) {
+      bedNumber = "BED_5";
+    }
+    else if (ward.BED_6 == patientId) {
+      bedNumber = "BED_6";
+    }
+    else if (ward.BED_7 == patientId) {
+      bedNumber = "BED_7";
+    }
+    else if (ward.BED_8 == patientId) {
+      bedNumber = "BED_8";
+    }
+    else if (ward.BED_9 == patientId) {
+      bedNumber = "BED_9";
+    }
+    else if (ward.BED_10 == patientId) {
+      bedNumber = "BED_10";
+    }
+
+    console.log(bedNumber);
+    await pool.query(
+      `INSERT INTO "WARD_HISTORY" ("DATE", "WARD_NO", "FLOOR_NO", "DOCTOR_ID_DAY", "DOCTOR_ID_NIGHT", "BED_1", "BED_2", "BED_3", "BED_4", "BED_5", "BED_6", "BED_7", "BED_8", "BED_9", "BED_10", "NURSE_ID_1", "NURSE_ID_2", "NURSE_ID_3", "NURSE_ID_4", "WARD_BOY_ID_1", "WARD_BOY_ID_2", "WARD_BOY_ID_3", "WARD_BOY_ID_4", "WARD_BOY_ID_5") 
+      VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
+      [ward["WARD_NO"], ward["FLOOR_NO"], ward["DOCTOR_ID_DAY"], ward["DOCTOR_ID_NIGHT"], ward["BED_1"], ward["BED_2"], ward["BED_3"], ward["BED_4"], ward["BED_5"], ward["BED_6"], ward["BED_7"], ward["BED_8"], ward["BED_9"], ward["BED_10"], ward["NURSE_ID_1"], ward["NURSE_ID_2"], ward["NURSE_ID_3"], ward["NURSE_ID_4"], ward["WARD_BOY_ID_1"], ward["WARD_BOY_ID_2"], ward["WARD_BOY_ID_3"], ward["WARD_BOY_ID_4"], ward["WARD_BOY_ID_5"]]
+    );
+
+    await pool.query(
+      `UPDATE "WARD" SET "${bedNumber.toUpperCase()}" = NULL WHERE "WARD_NO" = $1 AND "FLOOR_NO" = $2`,
+      [ward["WARD_NO"], ward["FLOOR_NO"]]
+    );
+    console.log("Patient checked out of the ward successfully.");
+    return res.status(200).json({ success: true, message: "Patient checked out of the ward successfully." });
+  } catch (error) {
+    console.error("Error checking out patient from ward:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+app.post("/sendMessage", async (req, res) => {
+  try {
+    const { from, to, message } = req.body;
+    const currentDate = new Date().toISOString().slice(0, 10); 
+    const currentTime = new Date().toISOString().slice(11, 19); 
+
+    await pool.query(
+      'INSERT INTO "NOTIFICATIONS" ("DATE", "TIME", "FROM", "TO", "MESSAGE") VALUES ($1, $2, $3, $4, $5)',
+      [currentDate, currentTime, from, to, message]
+    );
+
+    return res.status(200).json({ success: true, message: "Message sent successfully." });
+  } catch (error) {
+    console.error("Error sending message:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.post("/deleteMessage", async (req, res) => {
+  try {
+    const { date, time, from, to } = req.body;
+    await pool.query(
+      'DELETE FROM "NOTIFICATIONS" WHERE "DATE" = $1 AND "TIME" = $2 AND "FROM" = $3 AND "TO" = $4',
+      [date, time, from, to]
+    );
+
+    return res.status(200).json({ success: true, message: "Message deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting message:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+app.post('/cancelAppointment/:appointmentId', async (req, res) => {
+  const { appointmentId } = req.params;
+  console.log(appointmentId);
+  try {
+    
+    const result = await pool.query('DELETE FROM "APPOINTMENT" WHERE "APPOINTMENT_ID" = $1', [appointmentId]);
+   const re = await pool.query('UPDATE "MEDICAL_RECORD_PATIENT" SET "RESULT" = $2, "SERVICE_DATE" = CURRENT_DATE WHERE "APPOINTMENT_ID" = $1', [appointmentId, "Cancelled"]);
+    if (result.rowCount > 0) {
+      res.status(200).json({ message: 'Appointment cancelled successfully' });
+    } else {
+      res.status(404).json({ message: 'Appointment not found' });
+    }
+  } catch (error) {
+    console.error('Error cancelling appointment:', error);
+    res.status(500).json({ message: 'An error occurred while cancelling the appointment' });
+  }
+});
+
+app.post('/remove/:id', (req, res) => {
+  const employeeId = parseInt(req.params.id);
+  console.log(employeeId);
+  try {
+    if (Math.floor(employeeId / 10000) === 1) {
+      
+      const result= pool.query('DELETE FROM "DOCTORS" WHERE "DOCTOR_ID" = $1', [employeeId]);
+      console.log(result);
+      res.status(200).json({ message: 'Doctor removed successfully.' });
+    } else if (Math.floor(employeeId/ 10000) === 3) {
+      
+      const result= pool.query('DELETE FROM "NURSES" WHERE "NURSE_ID" = $1', [employeeId]);
+      console.log(result);
+      res.status(200).json({ message: 'Nurse removed successfully.' });
+    } else {
+      res.status(400).json({ message: 'Invalid employee ID.' });
+    }
+  } catch (error) {
+    console.error('Error removing employee:', error.message);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
 
 app.get("/changePassword/:userID/:currentPassword/:newPassword/:userType", async (req, res) => {
   try {
-    const { userID, currentPassword, newPassword, userType } = req.params; // Retrieve parameters from req.params
+    const { userID, currentPassword, newPassword, userType } = req.params; 
     console.log(req.params);
-
-    // Define the table name based on the user type
     let tableName;
     if (userType === 'doctor') {
       tableName = 'DOCTORS';
@@ -146,7 +630,6 @@ app.get("/changePassword/:userID/:currentPassword/:newPassword/:userType", async
       return res.status(400).json({ success: false, message: "Invalid user type." });
     }
 
-    // Check if the current password is correct
     const user = await pool.query(`SELECT * FROM "${tableName}" WHERE "${userType.toUpperCase()}_ID" = $1 AND "PASSWORD" = $2`, [userID, currentPassword]);
     
     if(user.rows.length === 0) {  
@@ -157,10 +640,10 @@ app.get("/changePassword/:userID/:currentPassword/:newPassword/:userType", async
     }
     
 
-    // Update the password
+    
     await pool.query(`UPDATE "${tableName}" SET "PASSWORD" = $1 WHERE "${userType.toUpperCase()}_ID" = $2`, [newPassword, userID]);
     
-    // Extract the message from the last row of "TRIGGER_MESSAGES" table
+    
     const triggerMsg = await pool.query(`SELECT "message" FROM "TRIGGER_MESSAGES" ORDER BY "id" DESC LIMIT 1`);
     const message = triggerMsg.rows[0].message;
 
@@ -173,30 +656,88 @@ app.get("/changePassword/:userID/:currentPassword/:newPassword/:userType", async
 });
 
 
-app.get("/userInfo", async (req, res) => {
+app.put('/updateCabinDetails/:cabinId', async (req, res) => {
+  const cabinId = req.params.cabinId;
+
+  const updatedDetails = req.body; 
+  console.log(cabinId, updatedDetails);
   try {
-    const { userID } = req.query;
-    console.log(userID);
-    const user = await pool.query('SELECT * FROM "DOCTORS" WHERE "ID" = $1', [userID]);
-    //console.log(user.rows[0]);
-    res.json(user.rows[0]);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    
+    if (updatedDetails.DOCTOR_ID_DAY === updatedDetails.DOCTOR_ID_NIGHT) {
+      return res.status(400).json({ error: 'Doctor IDs for day and night shifts should be different' });
+    }
+    floorNo = Math.floor(cabinId / 100);
+    cabinNo = cabinId % 100;
+    
+    const updateQuery = `
+      UPDATE "CABIN"
+      SET "DOCTOR_ID_DAY" = $1, "DOCTOR_ID_NIGHT" = $2, "NURSE_ID_1" = $3, "NURSE_ID_2" = $4
+      WHERE "CABIN_NO" = $5 AND "FLOOR_NO" = $6
+    `;
+    const { DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2 } = updatedDetails;
+    
+    await pool.query(updateQuery, [DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2, cabinNo, floorNo]);
+    //console.log("Updated cabin details: ", updatedDetails);
+    //console.log(updatedDetails);
+    
+    res.status(200).json({ message: 'Cabin details updated successfully' });
+  } catch (error) {
+    console.error('Error updating cabin details:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-app.get("/lastUserID", async (req, res) => {
+app.post('/markCompleted', async (req, res) => {
   try {
-    const lastUserID = await pool.query('SELECT MAX("PATIENT_ID") FROM "PATIENTS"');
-    //console.log(lastUserID.rows[0]);
-    res.json(lastUserID.rows[0]);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    const { appointmentId, result } = req.body;
+
+    //console.log('Received appointment ID:', appointmentId);
+    //console.log('Received result:', result);
+
+    // Update the APPOINTMENT table to mark the appointment as completed
+
+    // Update the MEDICAL_RECORD_PATIENT table with the result and current date
+    await pool.query('UPDATE "MEDICAL_RECORD_PATIENT" SET "RESULT" = $2, "SERVICE_DATE" = CURRENT_DATE WHERE "APPOINTMENT_ID" = $1', [appointmentId, result]);
+
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error marking appointment as completed:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-// Add this route to index.js
+
+app.put('/updateWardDetails/:wardNo', async (req, res) => {
+  const wardNo = req.params.wardNo;
+  console.log(wardNo);
+  const updatedDetails = req.body; 
+
+  try {
+    
+    ward = wardNo % 100;
+    floor = Math.floor(wardNo / 100);
+    
+    if (updatedDetails.DOCTOR_ID_DAY === updatedDetails.DOCTOR_ID_NIGHT) {
+      return res.status(400).json({ error: 'Doctor IDs for day and night shifts should be different' });
+    }
+    
+    const updateQuery = `
+      UPDATE "WARD"
+      SET "DOCTOR_ID_DAY" = $1, "DOCTOR_ID_NIGHT" = $2, "NURSE_ID_1" = $3, "NURSE_ID_2" = $4,
+      "NURSE_ID_3" = $5, "NURSE_ID_4" = $6
+      WHERE "WARD_NO" = $7 AND "FLOOR_NO" = $8
+    `;
+    const { DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2, NURSE_ID_3, NURSE_ID_4 } = updatedDetails;
+    console.log(updatedDetails);
+    await pool.query(updateQuery, [DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2, NURSE_ID_3, NURSE_ID_4, ward, floor]);
+    console.log("Updated ward details: ", updatedDetails);
+    res.status(200).json({ message: 'Ward details updated successfully' });
+  } catch (error) {
+    console.error('Error updating ward details:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.get("/appointments", async (req, res) => {
   if(req.query.patientId){
     try {
@@ -224,11 +765,10 @@ app.get("/appointments", async (req, res) => {
       SELECT P.*,A.*,B."AMOUNT_PAID",B."AMOUNT_DUE"
 FROM "PATIENTS" P JOIN "APPOINTMENT" A ON P."PATIENT_ID"=A."PATIENT_ID" 
 JOIN "BILLING" B ON B."APPOINTMENT_ID"=A."APPOINTMENT_ID"
-WHERE A."DOCTOR_ID"=$1 AND "APPOINTMENT_DATE" >= $2 
+WHERE A."DOCTOR_ID"=$1 AND "APPOINTMENT_DATE" > $2 
       `, 
       [doctorId, currentDate]);
     res.json(appointments.rows);
-    //console.log(appointments.rows);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ success: false, message: "Server error" });
@@ -236,44 +776,6 @@ WHERE A."DOCTOR_ID"=$1 AND "APPOINTMENT_DATE" >= $2
 
 });
 
-
-app.get('/allocatedCabins', async (req, res) => {
-  try {
-    const { patientId } = req.query;
-    //console.log(patientId);
-    // Adjust the SQL query based on your database schema
-    const query = `
-      SELECT *
-      FROM "CABIN"
-      WHERE "PATIENT_ID" = $1;
-    `;
-
-    const result = await pool.query(query, [patientId]);
-    res.json(result.rows);
-    //console.log(result.rows);
-  } catch (error) {
-    console.error('Error fetching allocated cabins:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-app.get('/allocatedWards', async (req, res) => {
-  const { patientId } = req.query;
-
-  try {
-    //console.log(patientId, "patientId");
-    const result = await pool.query(
-      'SELECT * FROM "WARD" WHERE $1 IN ( "BED_1", "BED_2", "BED_3", "BED_4", "BED_5", "BED_6", "BED_7", "BED_8", "BED_9", "BED_10" )',
-      [patientId]
-    );
-
-    res.json(result.rows);
-    //console.log(result.rows);
-  } catch (error) {
-    console.error('Error executing query:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 app.get('/nurseDutiesInCabins', async (req, res) => {
   const { nurseId } = req.query;
@@ -320,12 +822,10 @@ app.get('/nurseDutiesInCabins', async (req, res) => {
   }
 });
 
-
 app.get('/nurseDutiesInWards/:nurseId', async (req, res) => {
   const { nurseId } = req.params;
   console.log(nurseId);
   try {
-    // Query to fetch nurse duties in wards for the provided nurse ID
     const nurseDutiesQuery = `
     SELECT
     W."WARD_NO" AS "WARD_NO",
@@ -390,10 +890,10 @@ WHERE $1 IN (W."NURSE_ID_1", W."NURSE_ID_2", W."NURSE_ID_3", W."NURSE_ID_4");
     `;
     const nurseDutiesResult = await pool.query(nurseDutiesQuery, [nurseId]);
 
-    // Extract the nurse duties information from the query result
+    
     const nurseDuties = nurseDutiesResult.rows;
 
-    // Send the nurse duties information as response
+    
     res.status(200).json(nurseDuties);
   } catch (err) {
     console.error('Error fetching nurse duties in wards:', err);
@@ -401,146 +901,12 @@ WHERE $1 IN (W."NURSE_ID_1", W."NURSE_ID_2", W."NURSE_ID_3", W."NURSE_ID_4");
   }
 });
 
-
-app.get('/departments', async (req, res) => {
-  try {
-    console.log("departments");
-    const result = await pool.query('SELECT * FROM "DEPARTMENTS"');
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching departments:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-app.get('/doctors', async (req, res) => {
-  const { department } = req.query;
-
-  try {
-    console.log(department);
-    const result = await pool.query('SELECT * FROM "DOCTORS" JOIN "DEPARTMENTS" ON "DEPT_ID"="DEPARTMENT_ID" WHERE "DEPARTMENT_NAME"=$1', [department]);
-    res.json(result.rows);
-    //console.log(result.rows);
-  } catch (error) {
-    console.error('Error fetching doctors:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-app.get('/availableTimeSlots', async (req, res) => {
-  try {
-    const { doctor, date } = req.query;
-
-    // Calculate the start and end time based on the doctor's ID
-    let startTime = '08:00:00';
-    let endTime = '12:00:00';
-    if (doctor > 10100) {
-      startTime = '18:00:00';
-      endTime = '22:00:00';
-    }
-
-    // Query to fetch occupied time slots for a specific date and doctor
-    const query = `
-      SELECT "START_TIME" 
-      FROM "APPOINTMENT"
-      WHERE "DOCTOR_ID" = $1 
-      AND "APPOINTMENT_DATE" = $2
-      ORDER BY "START_TIME";
-    `;
-
-    const result = await pool.query(query, [doctor, date]);
-
-    const occupiedTimeSlots = new Set(result.rows.map(row => row.START_TIME));
-
-    // Generate available time slots within the specified time range
-    const availableTimeSlots = [];
-    let currentTime = new Date(`${date} ${startTime}`);
-
-    while (currentTime < new Date(`${date} ${endTime}`)) {
-      const timeSlot = format(currentTime, 'HH:mm:ss');
-
-      if (!occupiedTimeSlots.has(timeSlot)) {
-        // Include both date and time in the response
-        const dateTimeSlot = {
-          date,
-          time: timeSlot,
-        };
-
-        availableTimeSlots.push(dateTimeSlot);
-      }
-
-      currentTime = addMinutes(currentTime, 15);
-    }
-
-    res.json(availableTimeSlots);
-  } catch (error) {
-    console.error('Error fetching available time slots:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-
-
-app.post('/submitAppointment', async (req, res) => {
-  try {
-    const { doctor, time, date, patientId } = req.body;
-
-    console.log('Received appointment data:', req.body);
-    // Step 1: Select the highest appointment ID
-    const selectMaxAppointmentIdQueryFromMedicalRecord = `
-      SELECT MAX("APPOINTMENT_ID") as max_id FROM "MEDICAL_RECORD_PATIENT";
-    `;
-
-    const maxIdResultFromMedicalRecord = await pool.query(selectMaxAppointmentIdQueryFromMedicalRecord);
-
-    //console.log(maxIdResultFromMedicalRecord.rows[0].max_id);
-    const nextAppointmentId = maxIdResultFromMedicalRecord.rows[0].max_id + 1;
-
-    // Step 2: Insert the new appointment with the calculated ID
-    const insertAppointmentQuery = `
-      INSERT INTO "APPOINTMENT" ("APPOINTMENT_ID", "DOCTOR_ID", "APPOINTMENT_DATE", "START_TIME", "PATIENT_ID")
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *;
-    `;
-
-    const result = await pool.query(insertAppointmentQuery, [nextAppointmentId, doctor, date, time, patientId]);
-    
-    res.json({ success: true, appointment: result.rows[0] });
-  } catch (error) {
-    console.error('Error submitting appointment:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-app.post('/markCompleted', async (req, res) => {
-  try {
-    const { appointmentId, result } = req.body;
-
-    //console.log('Received appointment ID:', appointmentId);
-    //console.log('Received result:', result);
-
-    // Update the APPOINTMENT table to mark the appointment as completed
-
-    // Update the MEDICAL_RECORD_PATIENT table with the result and current date
-    await pool.query('UPDATE "MEDICAL_RECORD_PATIENT" SET "RESULT" = $2, "SERVICE_DATE" = CURRENT_DATE WHERE "APPOINTMENT_ID" = $1', [appointmentId, result]);
-
-    // Here, you can handle saving the result to your database as well if needed.
-    // For example, if you have a separate table to store appointment results, you can insert the result there.
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error marking appointment as completed:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 app.get('/doctorWardDuty', async (req, res) => {
   try {
-      // Extract the doctorId from the query parameters
+      
       const { doctorId } = req.query;
       console.log(doctorId);
-      // Construct the SQL query to fetch ward duty information for the specified doctorId
+      
       const query = `
       SELECT
     W."WARD_NO" AS "WARD_NO",
@@ -607,13 +973,11 @@ LEFT JOIN
   
       `;
 
-      // Execute the SQL query with the specified doctorId
+     
       const { rows } = await pool.query(query, [doctorId]);
-      //console.log(rows);
-      // Send the fetched data as JSON response
       res.json(rows);
   } catch (error) {
-      // Handle errors
+      
       console.error('Error fetching ward duty info:', error);
       res.status(500).json({ error: 'An error occurred while fetching ward duty info' });
   }
@@ -621,10 +985,9 @@ LEFT JOIN
 
 app.get('/doctorCabinDuty', async (req, res) => {
   try {
-      // Extract the doctorId from the query parameters
+      
       const { doctorId } = req.query;
-      //console.log(doctorId);
-      // Construct the SQL query to fetch ward duty information for the specified doctorId
+      
       const query = `
       SELECT
       W."CABIN_NO" AS "CABIN_NO",
@@ -675,31 +1038,29 @@ app.get('/doctorCabinDuty', async (req, res) => {
   LEFT JOIN
       "NURSES" AS N2 ON W."NURSE_ID_2" = N2."NURSE_ID"
   WHERE
-      W."DOCTOR_ID_DAY" = $1 OR
-      W."DOCTOR_ID_NIGHT" = $1;
+      (W."DOCTOR_ID_DAY" = $1 OR
+      W."DOCTOR_ID_NIGHT" = $1)
+        AND W."PATIENT_ID" IS NOT NULL; 
       `;
 
-      // Execute the SQL query with the specified doctorId
+     
       const { rows } = await pool.query(query, [doctorId]);
       //console.log(rows);
-      // Send the fetched data as JSON response
+     
       res.json(rows);
   } catch (error) {
-      // Handle errors
+     
       console.error('Error fetching ward duty info:', error);
       res.status(500).json({ error: 'An error occurred while fetching ward duty info' });
   }
 });
 
-
-
-
 app.get('/nurseInfo', async (req, res) => {
   try {
-    // Extract the nurseId from the query parameters
+   
     const { nurseId } = req.query;
 
-    // Construct the SQL query to fetch nurse information
+    
     const query = `
       SELECT N.*, D.*, W.*
       FROM "NURSES" N
@@ -712,120 +1073,26 @@ app.get('/nurseInfo', async (req, res) => {
       WHERE N."NURSE_ID" = $1;
     `;
 
-    // Execute the SQL query with the specified nurseId
+    
     const { rows } = await pool.query(query, [nurseId]);
 
-    // Send the fetched data as JSON response
+    
     res.json(rows);
   } catch (error) {
-    // Handle errors
+    
     console.error('Error fetching nurse information:', error);
     res.status(500).json({ error: 'An error occurred while fetching nurse information' });
   }
 });
 
-
-
-app.get('/doctorRecentActivitiesInWard', async (req, res) => {
-  try {
-    const { doctor_id,interval } = req.query;
-    console.log(req.query); // Log received parameters for debugging
-
-    // Call the getDoctorActivitiesInWard function
-    const query = `
-      SELECT * FROM getDoctorActivitiesInWard($1, $2)
-    `;
-    const { rows } = await pool.query(query, [doctor_id, interval]);
-
-    // Send the response
-    res.json(rows);
-  } catch (error) {
-    console.error('Error executing query:', error);
-    res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
-});
-
-app.get('/doctorRecentActivitiesInCabin', async (req, res) => {
-  try {
-    const { doctor_id,interval } = req.query;
-    console.log(req.query); // Log received parameters for debugging
-    
-    // Call the getdoctoractivitiesincabin function
-    const query = `
-      SELECT * FROM getdoctoractivitiesincabin($1, $2)
-    `;
-    const { rows } = await pool.query(query, [doctor_id, interval]);
-    console.log(rows);
-    // Send the response
-    res.json(rows);
-  } catch (error) {
-    console.error('Error executing query:', error);
-    res.status(500).json({ error: 'An unexpected error occurred.' });
-  }
-});
-
-app.get('/patientsWardHistory/:patientId', async (req, res) => {
-  const { patientId } = req.params;
-  console.log(patientId); // Make sure patientId is correctly extracted
-
-  try {
-      // Call the PL/pgSQL function to retrieve ward history
-      const wardHistory = await pool.query('SELECT * FROM get_ward_history($1)', [patientId]);
-
-      // Send the ward history data as response
-      res.status(200).json({ wardHistory });
-     // console.log(wardHistory.rows);
-  } catch (err) {
-      console.error('Error executing query', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-
-app.get('/patientsCabinHistory/:patientId', async (req, res) => {
-  const { patientId } = req.params;
- // console.log(patientId);
-  try {
-    // Call the PL/pgSQL function to retrieve ward history
-    const cabinHistory = await pool.query('SELECT * FROM get_patient_cabin_history($1)', [patientId]);
-
-    // Send the ward history data as response
-    res.status(200).json({ cabinHistory });
-  } catch (err) {
-    console.error('Error executing query', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// app.get('/patientInfoforWard/:bedId', async (req, res) => {
-//   const bedId = req.params.bedId;
-//   console.log(bedId);
-//   try {
-
-//       const client = await pool.connect();
-//       const result = await client.query('SELECT * FROM patients WHERE bed_id = $1', [bedId]);
-//       client.release();
-//       if (result.rows.length > 0) {
-//           res.json(result.rows[0]);
-//       } else {
-//           res.status(404).json({ error: 'Patient information not found for the specified bed.' });
-//       }
-//   } catch (error) {
-//       console.error('Error fetching patient information:', error);
-//       res.status(500).json({ error: 'Internal server error' });
-//   }
-// });
-
-
 app.get('/wardHistory', async (req, res) => {
   const { wardNo,date } = req.query;
-  //console.log(wardNo, floorNo, date); // Log received parameters for debugging
+  
   try {
     ward = wardNo%100;
     floor = Math.floor(wardNo/100);
     console.log(ward, floor, date);
-    // Query to fetch ward history based on ward number, floor number, and date
+    
     const wardHistoryQuery = `
     SELECT
     W."WARD_NO" AS "WARD_NO",
@@ -891,10 +1158,10 @@ WHERE W."WARD_NO" = $1 AND W."FLOOR_NO" = $2 AND W."DATE" = $3;
    //console.log(wardNo, floorNo, date);
     const wardHistoryResult = await pool.query(wardHistoryQuery, [ward, floor, date]);
 
-    // Extract the rows from the result
+    
     const wardHistory = wardHistoryResult.rows;
    // console.log(wardHistory);
-    // Send the ward history data as response
+   
     res.status(200).json({ wardHistory });
   } catch (err) {
     console.error('Error executing query:', err);
@@ -910,7 +1177,7 @@ app.get('/cabinDetails/:cabinId', async (req, res) => {
     
     cabinNo = cabinId % 100;
     console.log(floorNo, cabinNo);
-    // Query the database to fetch cabin details by cabin ID
+    
     const cabinDetails = await pool.query(`
     SELECT
       W."CABIN_NO" AS "CABIN_NO",
@@ -969,7 +1236,7 @@ app.get('/cabinDetails/:cabinId', async (req, res) => {
       return res.status(404).json({ message: 'Cabin not found' });
     }
 
-    // Return cabin details as JSON response
+    
     res.json(cabinDetails.rows[0]);
    // console.log(cabinDetails.rows[0]);
   } catch (error) {
@@ -981,7 +1248,7 @@ app.get('/cabinDetails/:cabinId', async (req, res) => {
 
 app.get('/availableDoctors', async (req, res) => {
   try {
-    // Query to fetch available doctors
+    
     const availableDoctorsQuery = `
     SELECT D."DOCTOR_ID", D."FIRST_NAME" || ' ' || D."LAST_NAME" AS "DOCTOR_NAME"
     FROM "DOCTORS" D 
@@ -990,10 +1257,10 @@ app.get('/availableDoctors', async (req, res) => {
     `;
     const availableDoctorsResult = await pool.query(availableDoctorsQuery);
 
-    // Extract the available doctors from the result
+    
     const availableDoctors = availableDoctorsResult.rows;
 
-    // Send the available doctors as response
+    
     res.status(200).json(availableDoctors);
     //console.log(availableDoctors);
   } catch (err) {
@@ -1004,7 +1271,7 @@ app.get('/availableDoctors', async (req, res) => {
 
 app.get('/availableNurses', async (req, res) => {
   try {
-    // Query to fetch available nurses
+    
     const availableNursesQuery = `
     SELECT "NURSE_ID", "FIRST_NAME" || ' ' || "LAST_NAME" AS "NURSE_NAME"
     FROM "NURSES"
@@ -1025,10 +1292,8 @@ app.get('/availableNurses', async (req, res) => {
     `;
     const availableNursesResult = await pool.query(availableNursesQuery);
 
-    // Extract the available nurses from the result
+    
     const availableNurses = availableNursesResult.rows;
-
-    // Send the available nurses as response
     res.status(200).json(availableNurses);
     //console.log(availableNurses);
   } catch (err) {
@@ -1036,44 +1301,6 @@ app.get('/availableNurses', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-// Assuming you have already initialized your Express app and set up your database connection
-
-// Route to handle updating cabin details
-app.put('/updateCabinDetails/:cabinId', async (req, res) => {
-  const cabinId = req.params.cabinId;
-
-  const updatedDetails = req.body; // Contains the updated cabin details
-  console.log(cabinId, updatedDetails);
-  try {
-    // Perform any necessary validation here
-
-    // For example, you can check if the doctor IDs for day and night shifts are different
-    if (updatedDetails.DOCTOR_ID_DAY === updatedDetails.DOCTOR_ID_NIGHT) {
-      return res.status(400).json({ error: 'Doctor IDs for day and night shifts should be different' });
-    }
-    floorNo = Math.floor(cabinId / 100);
-    cabinNo = cabinId % 100;
-    //Update the cabin details in the database
-    const updateQuery = `
-      UPDATE "CABIN"
-      SET "DOCTOR_ID_DAY" = $1, "DOCTOR_ID_NIGHT" = $2, "NURSE_ID_1" = $3, "NURSE_ID_2" = $4
-      WHERE "CABIN_NO" = $5 AND "FLOOR_NO" = $6
-    `;
-    const { DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2 } = updatedDetails;
-    
-    await pool.query(updateQuery, [DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2, cabinNo, floorNo]);
-    //console.log("Updated cabin details: ", updatedDetails);
-    //console.log(updatedDetails);
-    // Respond with success message
-    //send index 0 if successful
-    res.status(200).json({ message: 'Cabin details updated successfully' });
-  } catch (error) {
-    console.error('Error updating cabin details:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
 
 
 app.get('/wardInfo/:wardId', async (req, res) => {
@@ -1150,11 +1377,9 @@ WHERE
   }
 });
 
-
-
 app.get('/availableDoctorsWard', async (req, res) => {
   try {
-    // Query to fetch available doctors
+   
     const availableDoctorsQuery = `
     SELECT D."DOCTOR_ID", D."FIRST_NAME" || ' ' || D."LAST_NAME" AS "DOCTOR_NAME"
     FROM "DOCTORS" D 
@@ -1163,48 +1388,14 @@ app.get('/availableDoctorsWard', async (req, res) => {
     `;
     const availableDoctorsResult = await pool.query(availableDoctorsQuery);
 
-    // Extract the available doctors from the result
+    
     const availableDoctors = availableDoctorsResult.rows;
     console.log("availableDoctors",availableDoctors); 
-    // Send the available doctors as response
+    
     res.status(200).json(availableDoctors);
-    //console.log(availableDoctors);
+    
   } catch (err) {
     console.error('Error fetching available doctors:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-app.put('/updateWardDetails/:wardNo', async (req, res) => {
-  const wardNo = req.params.wardNo;
-  console.log(wardNo);
-  const updatedDetails = req.body; // Contains the updated ward details
-
-  try {
-    // Perform any necessary validation here
-    ward = wardNo % 100;
-    floor = Math.floor(wardNo / 100);
-    // For example, you can check if the doctor IDs for day and night shifts are different
-    if (updatedDetails.DOCTOR_ID_DAY === updatedDetails.DOCTOR_ID_NIGHT) {
-      return res.status(400).json({ error: 'Doctor IDs for day and night shifts should be different' });
-    }
-    
-    // Update the ward details in the database
-    const updateQuery = `
-      UPDATE "WARD"
-      SET "DOCTOR_ID_DAY" = $1, "DOCTOR_ID_NIGHT" = $2, "NURSE_ID_1" = $3, "NURSE_ID_2" = $4,
-      "NURSE_ID_3" = $5, "NURSE_ID_4" = $6
-      WHERE "WARD_NO" = $7 AND "FLOOR_NO" = $8
-    `;
-    const { DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2, NURSE_ID_3, NURSE_ID_4 } = updatedDetails;
-    console.log(updatedDetails);
-    await pool.query(updateQuery, [DOCTOR_ID_DAY, DOCTOR_ID_NIGHT, NURSE_ID_1, NURSE_ID_2, NURSE_ID_3, NURSE_ID_4, ward, floor]);
-    console.log("Updated ward details: ", updatedDetails);
-
-    // Respond with success message
-    res.status(200).json({ message: 'Ward details updated successfully' });
-  } catch (error) {
-    console.error('Error updating ward details:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -1214,7 +1405,7 @@ app.get('/patientInfoforWard/:patientId', async (req, res) => {
   const { patientId } = req.params;
   console.log("dslk",patientId);
   try {
-    // Query to fetch patient information for the provided patient ID
+    
     const patientInfoQuery = `
     SELECT
     W."WARD_NO",
@@ -1297,15 +1488,15 @@ WHERE
     `;
     const patientInfoResult = await pool.query(patientInfoQuery, [patientId]);
 
-    // Extract the patient information from the query result
+   
     const patientInfo = patientInfoResult.rows[0];
 
     if (!patientInfo) {
-      // If patient not found, return 404 status code
+     
       return res.status(404).json({ error: 'Patient not found' });
     }
 
-    // Send the patient information as response
+   
     res.status(200).json(patientInfo);
   } catch (err) {
     console.error('Error fetching patient information:', err);
@@ -1383,14 +1574,98 @@ WHERE
   }
 });
 
+app.get('/doctorRecentActivitiesInWard', async (req, res) => {
+  try {
+    const { doctor_id,interval } = req.query;
+    console.log(req.query); 
+
+    const query = `
+      SELECT * FROM getDoctorActivitiesInWard($1, $2)
+    `;
+    const { rows } = await pool.query(query, [doctor_id, interval]);
+    res.json(rows);
+  } catch (error) {
+    console.error('Error executing query:', error);
+    res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
+});
+
+app.get('/doctorRecentActivitiesInCabin', async (req, res) => {
+  try {
+    const { doctor_id,interval } = req.query;
+    console.log(req.query); 
+   
+    const query = `
+      SELECT * FROM getdoctoractivitiesincabin($1, $2)
+    `;
+    const { rows } = await pool.query(query, [doctor_id, interval]);
+    console.log(rows);
+    
+    res.json(rows);
+  } catch (error) {
+    console.error('Error executing query:', error);
+    res.status(500).json({ error: 'An unexpected error occurred.' });
+  }
+});
+
+app.get('/patientsWardHistory/:patientId', async (req, res) => {
+  const { patientId } = req.params;
+  console.log(patientId); 
+
+  try {
+      
+      const wardHistory = await pool.query('SELECT * FROM get_ward_history($1)', [patientId]);
+
+      
+      res.status(200).json({ wardHistory });
+     
+  } catch (err) {
+      console.error('Error executing query', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/patientsCabinHistory/:patientId', async (req, res) => {
+  const { patientId } = req.params;
+ // console.log(patientId);
+  try {
+   
+    const cabinHistory = await pool.query('SELECT * FROM get_patient_cabin_history($1)', [patientId]);
+
+   
+    res.status(200).json({ cabinHistory });
+  } catch (err) {
+    console.error('Error executing query', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// app.get('/patientInfoforWard/:bedId', async (req, res) => {
+//   const bedId = req.params.bedId;
+//   console.log(bedId);
+//   try {
+
+//       const client = await pool.connect();
+//       const result = await client.query('SELECT * FROM patients WHERE bed_id = $1', [bedId]);
+//       client.release();
+//       if (result.rows.length > 0) {
+//           res.json(result.rows[0]);
+//       } else {
+//           res.status(404).json({ error: 'Patient information not found for the specified bed.' });
+//       }
+//   } catch (error) {
+//       console.error('Error fetching patient information:', error);
+//       res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 
 app.post('/admitPatient/:patient_id/:required_specialization', async (req, res) => {
   try {
     const { patient_id, required_specialization } = req.params;
-    // message is a varchar type output parameter
+   
     console.log(patient_id, required_specialization);
     let message = '';
-    // Call the stored procedure with the patient_id and required_specialization
+    
     await pool.query('SELECT admit_patient_to_ward($1, $2) AS message', [patient_id, required_specialization], (err, result) => {
       if (err) {
         
@@ -1407,20 +1682,18 @@ app.post('/admitPatient/:patient_id/:required_specialization', async (req, res) 
   }
 });
 
-
-
 app.post('/admitPatientToCabin/:patient_id/:cabinType', async (req, res) => {
   try {
     const { patient_id, cabinType } = req.params;
     console.log(patient_id, cabinType);
-    // Call the function admit_patient_to_cabin and store the returned message
+    
     const { rows } = await pool.query('SELECT admit_patient_to_cabin($1, $2) AS message', [patient_id, cabinType]);
     const message = rows[0].message;
     
-    // Log the message to the console
+    
     console.log(message);
     
-    // Send the message as the response
+   
     res.send(message);
   } catch (error) {
     console.error('Error:', error);
@@ -1428,107 +1701,12 @@ app.post('/admitPatientToCabin/:patient_id/:cabinType', async (req, res) => {
   }
 });
 
-
-
-app.get('/cabinTypes', async (req, res) => {  
-  try {
-    const cabinTypes = await pool.query('SELECT DISTINCT "CABIN_TYPE" FROM "CABIN"');
-    res.json(cabinTypes.rows);
-  } catch (error) {
-    console.error('Error fetching cabin types:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-app.post('/leaveApplication', async (req, res) => {
-  const { staffId, startDate, endDate, reason } = req.body;
-
-  try {
-    // Insert leave application into the database
-    const insertQuery = `
-      INSERT INTO "LEAVE_REQUESTS" ("APPLICANT_ID", "REASON_FOR_LEAVE", "START_DATE", "END_DATE")
-      VALUES ($1, $2, $3, $4)
-    `;
-    await pool.query(insertQuery, [staffId, reason, startDate, endDate]);
-    console.log("Leave application submitted successfully");
-    res.status(200).send('Leave application submitted successfully');
-  } catch (error) {
-    console.error('Error submitting leave application:', error);
-    res.status(500).send('An error occurred while processing the request');
-  }
-});
-
-
-
-app.get('/displayLeaveApplications', async (req, res) => {
-  try {
-    const leaveApplications = await pool.query(`
-    SELECT *
-    FROM "LEAVE_REQUESTS" 
-    WHERE "APPROVAL" = 'Pending';
-    `);
-    res.json(leaveApplications.rows); 
-  }
-  
-  catch (error) {
-    console.error('Error fetching leave applications:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-app.get('/applicantInfo/:applicantId', async (req, res) => {  
-  try {
-    const { applicantId } = req.params;
-    console.log(applicantId);
-    if(Math.floor(applicantId/10000)==1){
-      const query = `
-      SELECT
-      "DOCTOR_ID" AS "STAFF_ID",
-      "FIRST_NAME",
-      "LAST_NAME",
-      "EMAIL",
-      "CONTACT_NO",
-      "SPECIALIZATION" AS "DEPARTMENT"
-      FROM "DOCTORS"
-      WHERE "DOCTOR_ID" = $1;
-      `;
-      const { rows } = await pool.query(query, [applicantId]);
-      res.json(rows[0]);
-    }
-    else if(Math.floor(applicantId/10000)==3){
-      const query = `
-      SELECT
-      "NURSE_ID" AS "STAFF_ID",
-      "FIRST_NAME",
-      "LAST_NAME",
-      "EMAIL_ID" AS "EMAIL",
-      "CONTACT_NO",
-      "DEPT_ID" AS "DEPARTMENT"
-      FROM "NURSES"
-      WHERE "NURSE_ID" = $1;
-      `;
-      const { rows } = await pool.query(query, [applicantId]);
-      res.json(rows[0]);
-    }
-    else{
-      res.status(404).json({ error: 'Staff information not found' });
-    }
-  } catch (error) {
-    console.error('Error fetching applicant information:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
 app.post('/manageDoctorLeave/:doctorId', async (req, res) => {
   const { doctorId } = req.params;
   try {
-    // Call the manage_doctor_leave function in the database
+    
     const result = await pool.query('SELECT * FROM manage_doctor_leave($1)', [doctorId]);
-    // Extract the message from the result
-    // Send the message as the response
+    
     const message = result.rows[0];
     console.log(message);
     res.send(message);
@@ -1541,9 +1719,9 @@ app.post('/manageDoctorLeave/:doctorId', async (req, res) => {
 app.post('/manageNurseLeave/:nurseId', async (req, res) => {
   const { nurseId } = req.params;
   try {
-    // Call the manage_nurse_leave function in the database
+    
     const result = await pool.query('SELECT * FROM manage_nurse_leave($1)', [nurseId]);
-    // Extract the message from the result
+   
     const message = result.rows[0];
     console.log(message);
     res.send(message);
@@ -1553,19 +1731,39 @@ app.post('/manageNurseLeave/:nurseId', async (req, res) => {
   }
 });
 
+app.post('/rejectApplication/:leaveId', async (req, res) => {
+
+  const { leaveId } = req.params;
+  try {
+    
+    const result = await pool.query(`
+      UPDATE "LEAVE_REQUESTS" SET "APPROVAL" = 'Rejected' WHERE "APPLICANT_ID" = $1;
+    `
+    , [leaveId]);
+    
+    const message = result.rows[0];
+    console.log(message);
+    res.send(message);
+  } catch (error) {
+    console.error('Error rejecting leave application:', error);
+    res.status(500).send('An error occurred while rejecting the leave application');
+  } 
+});
 
 
 
-
-// Define a route to handle patient checkout
 app.post('/checkout/:cabinId', async (req, res) => {
   const { cabinId } = req.params;
-
-  
+  let cabinNo = cabinId % 100;
+  let floorNo = Math.floor(cabinId / 100);
+    console.log(cabinId);
   try {
-    // Call the checkout function in the database
-    const result = await pool.query('SELECT * FROM checkout($1)', [cabinId]);
-    // Extract the message from the result
+    
+    const result = await pool.query(`
+      UPDATE "CABIN" SET "PATIENT_ID" = NULL WHERE "CABIN_NO" = $1 AND "FLOOR_NO" = $2;
+    `
+    , [cabinNo, floorNo]);
+   
     const message = result.rows[0];
     console.log(message);
     res.send(message);
@@ -1578,9 +1776,9 @@ app.post('/checkout/:cabinId', async (req, res) => {
 app.post('/rejection/:leaveId', async (req, res) => {
   const { leaveId } = req.params;
   try {
-    // Call the reject_leave function in the database
+    
     const result = await pool.query('SELECT * FROM reject_leave($1)', [leaveId]);
-    // Extract the message from the result
+    
     const message = result.rows[0];
     console.log(message);
     res.send(message);
@@ -1590,236 +1788,54 @@ app.post('/rejection/:leaveId', async (req, res) => {
   }
 });
 
-app.post("/patientCabinCheckOut", async (req, res) => {
+
+app.post("/addDoctor", async (req, res) => {
   try {
-    const { patientId } = req.body;
+    const {
+      firstName,
+      lastName,
+      dateOfBirth,
+      departmentId,
+      email,
+      contactNumber,
+      salary,
+      gender,
+      password,
+      shift,
+      experience,
+      specialization,
+      appointmentFee
+    } = req.body;
+    console.log(req.body);
+      let maxId = await pool.query('SELECT MAX("DOCTOR_ID") as max FROM "DOCTORS"');
+      console.log(maxId.rows[0].max); 
+      
+    const newDoctor = await pool.query(
+      `INSERT INTO "DOCTORS" (
+        "DOCTOR_ID",
+        "FIRST_NAME",
+        "LAST_NAME",
+        "DATE_OF_BIRTH",
+        "DEPT_ID",
+        "EMAIL",
+        "CONTACT_NO",
+        "SALARY",
+        "GENDER", 
+        "PASSWORD",
+        "SHIFT",
+        "EXPERIENCE",
+        "SPECIALIZATION",
+        "APPOINTMENT_FEE"
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+      [maxId.rows[0].max+1, firstName, lastName, dateOfBirth, departmentId, email, contactNumber
+        , salary,gender, password, shift, experience, specialization, appointmentFee]
+    ); 
 
-    // Find the cabin information for the patient
-    const cabinInfo = await pool.query(
-      `SELECT * FROM "CABIN" WHERE "PATIENT_ID" = $1`,
-      [patientId]
-    );
-
-    if (cabinInfo.rows.length === 0) {
-      return res.status(404).json({ success: false, message: "Patient not found in any cabin." });
-    }
-
-    const cabin = cabinInfo.rows[0];
-
-    // Insert the cabin information into the cabin history table
-    await pool.query(
-      `INSERT INTO "CABIN_HISTORY" ("DATE", "CABIN_NO", "FLOOR_NO", "PATIENT_ID", "DOCTOR_ID_DAY", "DOCTOR_ID_NIGHT", "CABIN_TYPE", "NURSE_ID_1", "NURSE_ID_2") 
-      VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7, $8)`,
-      [cabin["CABIN_NO"], cabin["FLOOR_NO"], cabin["PATIENT_ID"], cabin["DOCTOR_ID_DAY"], cabin["DOCTOR_ID_NIGHT"], cabin["CABIN_TYPE"], cabin["NURSE_ID_1"], cabin["NURSE_ID_2"]]
-    );
-
-    // Update the cabin to set patient ID to NULL
-    await pool.query(
-      `UPDATE "CABIN" SET "PATIENT_ID" = NULL WHERE "PATIENT_ID" = $1`,
-      [patientId]
-    );
-    console.log("Patient checked out successfully.");
-    return res.status(200).json({ success: true, message: "Patient checked out successfully." });
+    console.log("Doctor added successfully:", newDoctor.rows[0]);
+    return res.status(201).json({ success: true, message: "Doctor added successfully", doctor: newDoctor.rows[0] });
   } catch (error) {
-    console.error("Error checking out patient from cabin:", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error adding doctor:", error.message);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-app.post("/patientWardCheckOut", async (req, res) => {
-  try {
-    const { patientId } = req.body;
-    console.log("hgcf",patientId);
-    // Find the specific bed where the patient is located
-    const wardInfo = await pool.query(
-      `SELECT * FROM "WARD" WHERE $1 IN ("BED_1", "BED_2", "BED_3", "BED_4", "BED_5", "BED_6", "BED_7", "BED_8", "BED_9", "BED_10")`,
-      [patientId]
-    );
-
-    if (wardInfo.rows.length === 0) {
-      return res.status(404).json({ success: false, message: "Patient not found in any ward." });
-    }
-    
-    const ward = wardInfo.rows[0];
-    console.log(ward);
-    let bedNumber;
-    
-    // Determine which bed the patient is in
-    if (ward.BED_1 == patientId) {
-      bedNumber = "BED_1";
-    } else if (ward.BED_2 == patientId) {
-      bedNumber = "BED_2";
-    }
-    else if (ward.BED_3 == patientId) {
-      bedNumber = "BED_3";
-    }
-    else if (ward.BED_4 == patientId) {
-      bedNumber = "BED_4";
-    }
-    else if (ward.BED_5 == patientId) {
-      bedNumber = "BED_5";
-    }
-    else if (ward.BED_6 == patientId) {
-      bedNumber = "BED_6";
-    }
-    else if (ward.BED_7 == patientId) {
-      bedNumber = "BED_7";
-    }
-    else if (ward.BED_8 == patientId) {
-      bedNumber = "BED_8";
-    }
-    else if (ward.BED_9 == patientId) {
-      bedNumber = "BED_9";
-    }
-    else if (ward.BED_10 == patientId) {
-      bedNumber = "BED_10";
-    }
-
-    console.log(bedNumber);
-    // Add conditions for BED_3 to BED_10 as needed
-
-    // Insert the ward information into the ward history table
-    await pool.query(
-      `INSERT INTO "WARD_HISTORY" ("DATE", "WARD_NO", "FLOOR_NO", "DOCTOR_ID_DAY", "DOCTOR_ID_NIGHT", "BED_1", "BED_2", "BED_3", "BED_4", "BED_5", "BED_6", "BED_7", "BED_8", "BED_9", "BED_10", "NURSE_ID_1", "NURSE_ID_2", "NURSE_ID_3", "NURSE_ID_4", "WARD_BOY_ID_1", "WARD_BOY_ID_2", "WARD_BOY_ID_3", "WARD_BOY_ID_4", "WARD_BOY_ID_5") 
-      VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
-      [ward["WARD_NO"], ward["FLOOR_NO"], ward["DOCTOR_ID_DAY"], ward["DOCTOR_ID_NIGHT"], ward["BED_1"], ward["BED_2"], ward["BED_3"], ward["BED_4"], ward["BED_5"], ward["BED_6"], ward["BED_7"], ward["BED_8"], ward["BED_9"], ward["BED_10"], ward["NURSE_ID_1"], ward["NURSE_ID_2"], ward["NURSE_ID_3"], ward["NURSE_ID_4"], ward["WARD_BOY_ID_1"], ward["WARD_BOY_ID_2"], ward["WARD_BOY_ID_3"], ward["WARD_BOY_ID_4"], ward["WARD_BOY_ID_5"]]
-    );
-
-    // Update the specific bed in the ward to set patient ID to NULL
-    await pool.query(
-      `UPDATE "WARD" SET "${bedNumber.toUpperCase()}" = NULL WHERE "WARD_NO" = $1 AND "FLOOR_NO" = $2`,
-      [ward["WARD_NO"], ward["FLOOR_NO"]]
-    );
-    console.log("Patient checked out of the ward successfully.");
-    return res.status(200).json({ success: true, message: "Patient checked out of the ward successfully." });
-  } catch (error) {
-    console.error("Error checking out patient from ward:", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-
-app.post("/sendMessage", async (req, res) => {
-  try {
-    const { from, to, message } = req.body;
-
-    // Get the current date and time
-    const currentDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
-    const currentTime = new Date().toISOString().slice(11, 19); // HH:MM:SS format
-
-    // Insert the message into the "NOTIFICATIONS" table
-    await pool.query(
-      'INSERT INTO "NOTIFICATIONS" ("DATE", "TIME", "FROM", "TO", "MESSAGE") VALUES ($1, $2, $3, $4, $5)',
-      [currentDate, currentTime, from, to, message]
-    );
-
-    return res.status(200).json({ success: true, message: "Message sent successfully." });
-  } catch (error) {
-    console.error("Error sending message:", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-app.post("/deleteMessage", async (req, res) => {
-  try {
-    const { date, time, from, to } = req.body;
-
-    // Delete the message from the "NOTIFICATIONS" table based on the provided parameters
-    await pool.query(
-      'DELETE FROM "NOTIFICATIONS" WHERE "DATE" = $1 AND "TIME" = $2 AND "FROM" = $3 AND "TO" = $4',
-      [date, time, from, to]
-    );
-
-    return res.status(200).json({ success: true, message: "Message deleted successfully." });
-  } catch (error) {
-    console.error("Error deleting message:", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-app.get("/receivedMessages/:userId", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    console.log(userId);
-    // Calculate the lower bound date (7 days ago)
-    const lowerBoundDate = new Date();
-    lowerBoundDate.setDate(lowerBoundDate.getDate() - 7);
-
-    // Calculate the derived "TO" value for the user ID
-    const derivedToValue = Math.floor(userId / 10000) * 10000;
-
-    // Select all notifications from the table for the last 7 days
-    // where "TO" matches the user ID or derived "TO" value
-    const notifications = await pool.query(
-      `SELECT "DATE", "TIME", "FROM", "TO", "MESSAGE" FROM "NOTIFICATIONS" 
-      WHERE ("TO" = $1 OR "TO" = $2) AND "DATE" >= $3`,
-      [userId, derivedToValue, lowerBoundDate]
-    );
-    
-    // Map over the results to format the date
-    const formattedNotifications = notifications.rows.map(notification => {
-      // Get the date part in UTC
-      const utcDate = new Date(notification.DATE);
-      // Adjust the date to local timezone
-      const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
-      // Format the date as yyyy-mm-dd
-      const formattedDate = localDate.toISOString().split('T')[0];
-      return {
-        DATE: formattedDate,
-        TIME: notification.TIME,
-        FROM: notification.FROM,
-        TO: notification.TO,
-        MESSAGE: notification.MESSAGE
-      };
-    });
-    
-    // Return the formatted notifications
-    return res.status(200).json({ success: true, notifications: formattedNotifications });
-    
-  } catch (error) {
-    console.error("Error retrieving notifications:", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-
-app.get("/sentMessages", async (req, res) => {
-  try {
-    const { userId } = req.body;
-
-    // Calculate the lower bound date (7 days ago)
-    const lowerBoundDate = new Date();
-    lowerBoundDate.setDate(lowerBoundDate.getDate() - 7);
-
-    // Select all notifications from the table for the last 7 days
-    // where "TO" matches the user ID or derived "TO" value
-    const sentMessages = await pool.query(
-      `SELECT "DATE", "TIME", "FROM", "TO", "MESSAGE" FROM "NOTIFICATIONS" 
-      WHERE "FROM" = $1 AND "DATE" >= $2`,
-      [userId, lowerBoundDate]
-    );
-    
-    // Map over the results to format the date
-    const formattedSentMessages = sentMessages.rows.map(message => {
-      // Get the date part in UTC
-      const utcDate = new Date(message.DATE);
-      // Adjust the date to local timezone
-      const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
-      // Format the date as yyyy-mm-dd
-      const formattedDate = localDate.toISOString().split('T')[0];
-      return {
-        DATE: formattedDate,
-        TIME: message.TIME,
-        FROM: message.FROM,
-        TO: message.TO,
-        MESSAGE: message.MESSAGE
-      };
-    });
-    
-    // Return the formatted sent messages
-    return res.status(200).json({ success: true, sentMessages: formattedSentMessages });    
-  } catch (error) {
-    console.error("Error retrieving notifications:", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});

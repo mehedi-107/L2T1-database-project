@@ -5,17 +5,18 @@ import UpdateCabin from './UpdateCabin';
 import UpdateWard from './UpdateWard';
 import AssignPatientToWard from './AssignPatientToWard';
 import AssignPatientToCabin from './AssignPatientToCabin';
-import Notification from './Notification'; // Import the Notification component
+import Notification from './Notification';
 import image1 from './logo2.png';
 import LeaveRequestList from './LeaveRequestList';
-
+import EmployeeManagement from './EmployeeManagement';
 const Admin = () => {
   const [showLeaveRequests, setShowLeaveRequests] = useState(false);
   const [showUpdateCabin, setShowUpdateCabin] = useState(false);
   const [showUpdateWard, setShowUpdateWard] = useState(false);
   const [showAssignToWard, setShowAssignToWard] = useState(false);
   const [showAssignToCabin, setShowAssignToCabin] = useState(false);
-  const [showNotification, setShowNotification] = useState(false); // State to control the visibility of the notification
+  const [showNotification, setShowNotification] = useState(false);
+  const [showEmployeeManagement, setShowEmployeeManagement] = useState(false); // State to control the visibility of the EmployeeManagement component
 
   const handleLeaveRequestsClick = () => {
     setShowLeaveRequests(!showLeaveRequests);
@@ -37,11 +38,14 @@ const Admin = () => {
     setShowAssignToCabin(!showAssignToCabin);
   };
 
+  const handleEmployeeManagementClick = () => {
+    setShowEmployeeManagement(!showEmployeeManagement);
+  };
+
   const handleNotificationClose = () => {
     setShowNotification(false);
   };
 
-  // Function to trigger the notification
   const triggerNotification = () => {
     setShowNotification(true);
   };
@@ -54,11 +58,9 @@ const Admin = () => {
         </div>
         <nav>
           <Link to="/">Logout</Link>
-          {/* Display the notification trigger */}
           <button onClick={triggerNotification}>Show Notification</button>
         </nav>
       </header>
-      {/* Conditionally render the notification */}
       {showNotification && (
         <Notification message="This is a notification message" onClose={handleNotificationClose} />
       )}
@@ -69,6 +71,12 @@ const Admin = () => {
             <h4>Leave Requests</h4>
           </div>
           {showLeaveRequests && <LeaveRequestList />}
+        </div>
+        <div className="employee-management">
+          <div className="employee-management-card" onClick={handleEmployeeManagementClick}>
+            <h4>Employee Management</h4>
+          </div>
+          {showEmployeeManagement && <EmployeeManagement />}
         </div>
         <div className="view-cabin-details">
           <div className="cabin-card" onClick={handleCardClick}>

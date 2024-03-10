@@ -232,7 +232,7 @@ const UpdateCabin = () => {
             </>
           ) : (
             <>
-              <button onClick={handleCheckout}>Checkout Patient</button>
+             
               <button onClick={() => setEditMode(true)}>Edit</button>
             </>
           )}

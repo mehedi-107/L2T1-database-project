@@ -1,0 +1,49 @@
+/* HospitalSituationBlog.css */
+
+.blog-container {
+    display: flex;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .hospital-image {
+    width: 50%;
+    max-width: 50%;
+    height: auto;
+    border-radius: 10px;
+    margin-right: 20px;
+    object-fit: cover; /* Ensure the image covers the container */
+  }
+  
+  .blog-content {
+    flex: 1;
+  }
+  
+  .blog-container h2 {
+    text-align: center;
+    margin-bottom: 20px; /* Add some space below the heading */
+    color: #333; /* Darken the heading color */
+  }
+  
+  .blog-container p {
+    margin-bottom: 15px;
+    text-align: justify;
+    line-height: 1.6; /* Increase line height for better readability */
+    color: #555; /* Darken the text color */
+  }
+  
+  /* Add some styling to the container to make it more visually appealing */
+  .blog-container {
+    border: 1px solid #ddd;
+  }
+  
+  /* Add hover effect to the container */
+  .blog-container:hover {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+  
