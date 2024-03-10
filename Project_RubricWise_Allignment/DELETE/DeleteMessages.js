@@ -1,8 +1,6 @@
 app.post("/deleteMessage", async (req, res) => {
     try {
       const { date, time, from, to } = req.body;
-  
-      // Delete the message from the "NOTIFICATIONS" table based on the provided parameters
       await pool.query(
         'DELETE FROM "NOTIFICATIONS" WHERE "DATE" = $1 AND "TIME" = $2 AND "FROM" = $3 AND "TO" = $4',
         [date, time, from, to]

@@ -14,12 +14,12 @@ ward_rec RECORD;
 BEGIN
     msg := 'Doctor ' || doctor_id_param || ' UPDATED WARD INFO : ';
     f := 0; u := 0;
-    -- Get the department ID of the input doctor
+    
     SELECT "DEPT_ID" INTO temp_doctor_dept_id FROM "DOCTORS" WHERE "DOCTOR_ID" = doctor_id_param;
     FOR ward_rec IN
         SELECT * FROM "WARD" WHERE "DOCTOR_ID_DAY" = doctor_id_param OR "DOCTOR_ID_NIGHT" = doctor_id_param
     LOOP
-        -- Check if the doctor has approved leave requests
+        
 FOR i IN SELECT * FROM "DOCTORS"
 LOOP
 IF(i."DEPT_ID" = temp_doctor_dept_id AND i."DOCTOR_ID" <> doctor_id_param) THEN
@@ -38,7 +38,6 @@ IF ward_rec."DOCTOR_ID_DAY" = doctor_id_param THEN
                     ELSE
                         UPDATE "WARD" SET "DOCTOR_ID_NIGHT" = i."DOCTOR_ID" WHERE "WARD_NO" = ward_rec."WARD_NO" AND "FLOOR_NO" = ward_rec."FLOOR_NO";
                     END IF;
-                    -- Update msg with reassignment information
                     msg := msg || 'Reassigned ' || i."FIRST_NAME" || ' ' || i."LAST_NAME" || '(' || i."DOCTOR_ID" || ') in Ward ' || ward_rec."WARD_NO" || ', Floor ' || ward_rec."FLOOR_NO" || '. ';
 f := 1;
                     EXIT;
@@ -55,7 +54,6 @@ msg := msg || ' UPDATED CABIN INFO : ';f := 0;
 FOR cabin_rec IN
         SELECT * FROM "CABIN" WHERE "DOCTOR_ID_DAY" = doctor_id_param OR "DOCTOR_ID_NIGHT" = doctor_id_param
     LOOP
-        -- Check if the doctor has approved leave requests
 FOR i IN SELECT * FROM "DOCTORS"
 LOOP
 IF(i."DEPT_ID" = temp_doctor_dept_id AND i."DOCTOR_ID" <> doctor_id_param) THEN
@@ -74,7 +72,7 @@ IF cabin_rec."DOCTOR_ID_DAY" = doctor_id_param THEN
                     ELSE
                         UPDATE "CABIN" SET "DOCTOR_ID_NIGHT" = i."DOCTOR_ID" WHERE "CABIN_NO" = cabin_rec."CABIN_NO" AND "FLOOR_NO" = cabin_rec."FLOOR_NO";
                     END IF;
-                    -- Update msg with reassignment information
+                   
                     msg := msg || 'Reassigned ' || i."FIRST_NAME" || ' ' || i."LAST_NAME" || '(' || i."DOCTOR_ID" || ') in Cabin ' || cabin_rec."CABIN_NO" || ', Floor ' || cabin_rec."FLOOR_NO" || '. ';
 f := 1;
                     EXIT;

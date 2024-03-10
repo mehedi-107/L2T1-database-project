@@ -3,12 +3,12 @@ app.post('/remove/:id', (req, res) => {
     console.log(employeeId);
     try {
       if (Math.floor(employeeId / 10000) === 1) {
-        // Remove from doctor table
+       
         const result= pool.query('DELETE FROM "DOCTORS" WHERE "DOCTOR_ID" = $1', [employeeId]);
         console.log(result);
         res.status(200).json({ message: 'Doctor removed successfully.' });
       } else if (Math.floor(employeeId/ 10000) === 3) {
-        // Remove from nurse table
+        
         const result= pool.query('DELETE FROM "NURSES" WHERE "NURSE_ID" = $1', [employeeId]);
         console.log(result);
         res.status(200).json({ message: 'Nurse removed successfully.' });

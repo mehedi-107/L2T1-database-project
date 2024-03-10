@@ -2,7 +2,6 @@ app.post('/leaveApplication', async (req, res) => {
     const { staffId, startDate, endDate, reason } = req.body;
   
     try {
-      // Insert leave application into the database
       const insertQuery = `
         INSERT INTO "LEAVE_REQUESTS" ("APPLICANT_ID", "REASON_FOR_LEAVE", "START_DATE", "END_DATE")
         VALUES ($1, $2, $3, $4)

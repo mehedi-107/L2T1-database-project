@@ -18,7 +18,7 @@ app.post("/addDoctor", async (req, res) => {
       console.log(req.body);
         let maxId = await pool.query('SELECT MAX("DOCTOR_ID") as max FROM "DOCTORS"');
         console.log(maxId.rows[0].max); 
-        // Insert the new doctor into the database
+       
       const newDoctor = await pool.query(
         `INSERT INTO "DOCTORS" (
           "DOCTOR_ID",

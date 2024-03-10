@@ -1,9 +1,7 @@
 app.get('/doctorCabinDuty', async (req, res) => {
     try {
-        // Extract the doctorId from the query parameters
+        
         const { doctorId } = req.query;
-        //console.log(doctorId);
-        // Construct the SQL query to fetch ward duty information for the specified doctorId
         const query = `
         SELECT
         W."CABIN_NO" AS "CABIN_NO",

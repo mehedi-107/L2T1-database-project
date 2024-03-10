@@ -6,7 +6,6 @@ app.get('/cabinDetails/:cabinId', async (req, res) => {
       
       cabinNo = cabinId % 100;
       console.log(floorNo, cabinNo);
-      // Query the database to fetch cabin details by cabin ID
       const cabinDetails = await pool.query(`
       SELECT
         W."CABIN_NO" AS "CABIN_NO",
@@ -64,10 +63,7 @@ app.get('/cabinDetails/:cabinId', async (req, res) => {
       if (cabinDetails.rows.length === 0) {
         return res.status(404).json({ message: 'Cabin not found' });
       }
-  
-      // Return cabin details as JSON response
       res.json(cabinDetails.rows[0]);
-     // console.log(cabinDetails.rows[0]);
     } catch (error) {
       console.error('Error fetching cabin details:', error);
       res.status(500).json({ message: 'Server error' });

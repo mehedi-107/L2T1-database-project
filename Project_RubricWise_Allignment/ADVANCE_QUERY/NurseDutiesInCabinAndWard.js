@@ -50,7 +50,7 @@ app.get('/nurseDutiesInCabins', async (req, res) => {
     const { nurseId } = req.params;
     console.log(nurseId);
     try {
-      // Query to fetch nurse duties in wards for the provided nurse ID
+     
       const nurseDutiesQuery = `
       SELECT
       W."WARD_NO" AS "WARD_NO",
@@ -115,10 +115,8 @@ app.get('/nurseDutiesInCabins', async (req, res) => {
       `;
       const nurseDutiesResult = await pool.query(nurseDutiesQuery, [nurseId]);
   
-      // Extract the nurse duties information from the query result
+      
       const nurseDuties = nurseDutiesResult.rows;
-  
-      // Send the nurse duties information as response
       res.status(200).json(nurseDuties);
     } catch (err) {
       console.error('Error fetching nurse duties in wards:', err);

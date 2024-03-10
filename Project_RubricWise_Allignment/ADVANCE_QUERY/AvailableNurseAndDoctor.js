@@ -1,6 +1,5 @@
 app.get('/availableNurses', async (req, res) => {
     try {
-      // Query to fetch available nurses
       const availableNursesQuery = `
       SELECT "NURSE_ID", "FIRST_NAME" || ' ' || "LAST_NAME" AS "NURSE_NAME"
       FROM "NURSES"
@@ -21,12 +20,10 @@ app.get('/availableNurses', async (req, res) => {
       `;
       const availableNursesResult = await pool.query(availableNursesQuery);
   
-      // Extract the available nurses from the result
+      
       const availableNurses = availableNursesResult.rows;
   
-      // Send the available nurses as response
       res.status(200).json(availableNurses);
-      //console.log(availableNurses);
     } catch (err) {
       console.error('Error fetching available nurses:', err);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -36,7 +33,6 @@ app.get('/availableNurses', async (req, res) => {
   
   app.get('/availableDoctors', async (req, res) => {
     try {
-      // Query to fetch available doctors
       const availableDoctorsQuery = `
       SELECT D."DOCTOR_ID", D."FIRST_NAME" || ' ' || D."LAST_NAME" AS "DOCTOR_NAME"
       FROM "DOCTORS" D 
@@ -44,11 +40,7 @@ app.get('/availableNurses', async (req, res) => {
       AND D."DOCTOR_ID" NOT IN (SELECT B."DOCTOR_ID_NIGHT" FROM "CABIN" B)
       `;
       const availableDoctorsResult = await pool.query(availableDoctorsQuery);
-  
-      // Extract the available doctors from the result
       const availableDoctors = availableDoctorsResult.rows;
-  
-      // Send the available doctors as response
       res.status(200).json(availableDoctors);
       //console.log(availableDoctors);
     } catch (err) {

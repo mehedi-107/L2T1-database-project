@@ -14,12 +14,10 @@ ward_rec RECORD;
 BEGIN
     msg := 'Nurse ' || nurse_id_param || ' UPDATED WARD INFO : ';
     f := 0; u := 0;
-    -- Get the department ID of the input nurse
     SELECT "DEPT_ID" INTO temp_nurse_dept_id FROM "NURSES" WHERE "NURSE_ID" = nurse_id_param;
     FOR ward_rec IN
         SELECT * FROM "WARD" WHERE nurse_id_param IN ("NURSE_ID_1", "NURSE_ID_2", "NURSE_ID_3", "NURSE_ID_4")
     LOOP
-        -- Check if the nurse has approved leave requests
 FOR i IN SELECT * FROM "NURSES"
 LOOP
 IF(i."DEPT_ID" = temp_nurse_dept_id AND i."NURSE_ID" <> nurse_id_param) THEN
@@ -42,7 +40,6 @@ ELSIF ward_rec."NURSE_ID_3" = nurse_id_param THEN
 ELSE
                         UPDATE "WARD" SET "NURSE_ID_4" = i."NURSE_ID" WHERE "WARD_NO" = ward_rec."WARD_NO" AND "FLOOR_NO" = ward_rec."FLOOR_NO";
                     END IF;
-                    -- Update msg with reassignment information
                     msg := msg || 'Reassigned ' || i."FIRST_NAME" || ' ' || i."LAST_NAME" || '(' || i."NURSE_ID" || ') in Ward ' || ward_rec."WARD_NO" || ', Floor ' || ward_rec."FLOOR_NO" || '. ';
 f := 1;
                     EXIT;
@@ -59,7 +56,7 @@ msg := msg || ' UPDATED CABIN INFO : ';f := 0;
 FOR cabin_rec IN
         SELECT * FROM "CABIN" WHERE nurse_id_param IN ("NURSE_ID_1", "NURSE_ID_2")
     LOOP
-        -- Check if the nurse has approved leave requests
+       
 FOR i IN SELECT * FROM "NURSES"
 LOOP
 IF(i."DEPT_ID" = temp_nurse_dept_id AND i."NURSE_ID" <> nurse_id_param) THEN
@@ -78,7 +75,7 @@ IF cabin_rec."NURSE_ID_1" = nurse_id_param THEN
                     ELSE
                         UPDATE "CABIN" SET "NURSE_ID_2" = i."NURSE_ID" WHERE "CABIN_NO" = cabin_rec."CABIN_NO" AND "FLOOR_NO" = cabin_rec."FLOOR_NO";
                     END IF;
-                    -- Update msg with reassignment information
+                   
                     msg := msg || 'Reassigned ' || i."FIRST_NAME" || ' ' || i."LAST_NAME" || '(' || i."NURSE_ID" || ') in Cabin ' || cabin_rec."CABIN_NO" || ', Floor ' || cabin_rec."FLOOR_NO" || '. ';
 f := 1;
                     EXIT;
