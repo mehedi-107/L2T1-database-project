@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 
 const WardInfoTable = ({ ward,doctorId }) => {
     const [expanded, setExpanded] = useState(false);
-    console.log(doctorId);
     const toggleExpansion = () => {
         setExpanded(!expanded);
     };

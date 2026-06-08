@@ -1,16 +1,13 @@
 import React from 'react';
 import './BedInfoCard.css';
-import BedInfo from './BedInfo';
 
 const BedInfoCard = ({ bedNumber, bedValue, viewedBy }) => { 
-    console.log(bedNumber, bedValue);
-    console.log(viewedBy);  
     const openBedInfo = () => {
         // Construct the URL based on the value of viewedBy
         let url;
         if (viewedBy === 'doctor') {
             url = `/bedInfo?selectedBed=${bedValue}`;
-        } else if (viewedBy == 'admin') {
+        } else if (viewedBy === 'admin') {
             url = `/bedInfoAdmin?selectedBed=${bedValue}`;
         } else {
             // Handle other cases or default behavior

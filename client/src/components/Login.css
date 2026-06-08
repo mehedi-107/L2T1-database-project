@@ -1,135 +1,86 @@
-/* Signup.css */
-
 .login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-image: url('https://e1.pxfuel.com/desktop-wallpaper/339/991/desktop-wallpaper-hospital-logo-hospital.jpg');
-  background-size: cover;
-  background-position: center;
-  margin: 0;
-  overflow: hidden;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background:
+    linear-gradient(rgba(9, 36, 32, 0.72), rgba(9, 36, 32, 0.72)),
+    url('../assets/a.jpg') center / cover;
 }
 
 .login-content {
-  position: relative;
-  width: 350px;
-  padding: 40px;
-  border-radius: 30px;
-  background-color: rgba(0, 0, 0, 0.8);
-  font-family: sans-serif;
-  color: #fff;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  animation: fadeInUp 0.8s ease-in-out;
+  width: min(100%, 420px);
+  padding: 34px;
+  background: #ffffff;
+  border: 1px solid #dbe7e3;
+  border-radius: 8px;
+  box-shadow: 0 24px 80px rgba(8, 32, 28, 0.2);
+}
+
+.login-heading {
+  margin: 0 0 24px;
+  color: #123b35;
+  font-size: 2rem;
 }
 
 .login-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  gap: 16px;
+}
+
+.login-form .form-group {
+  margin: 0;
+}
+
+.login-form input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  color: #10231f;
+  background: #f7faf9;
+  border: 1px solid #cbdcd7;
+  border-radius: 6px;
+}
+
+.login-form input:focus {
+  outline: 2px solid #16a085;
+  outline-offset: 2px;
+  border-color: #16a085;
+}
+
+.login-form .btn-primary {
+  min-height: 48px;
+  padding: 0 18px;
   color: #ffffff;
+  background: #0f766e;
+  border: 0;
+  border-radius: 6px;
+  font-weight: 800;
 }
 
-h2.login-heading {
-  color: #ffffff;
-  margin-bottom: 20px;
-  font-size: 2.5rem;
+.login-form .btn-primary:hover {
+  background: #0b5f59;
 }
 
-.form-group {
-  position: relative;
-  width: 100%;
-  margin-bottom: 20px;
-  border: none;
-  border-radius: 8px;
+.auth-error {
+  margin: 0;
+  padding: 10px 12px;
+  color: #8a1f2d;
+  background: #fff1f3;
+  border: 1px solid #f2c5cc;
+  border-radius: 6px;
+  font-weight: 700;
 }
 
-.form-control-login {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: #333;
-  color: #8c8c8c;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+.text-white {
+  margin: 0;
+  color: #49615b;
 }
 
-.form-control::placeholder {
-  color: #8c8c8c;
-}
-
-.form-control:focus {
-  background-color: #333;
-  border-bottom: 1px solid #e50914;
-  color: #000;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 15px;
-  background-color: #e50914;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
-  font-size: 1.2rem;
-}
-
-.btn-primary:hover {
-  background-color: #b20710;
-}
-
-.field-error {
-  position: absolute;
-  bottom: -18px;
-  left: 0;
-  color: #ff3333;
-  font-size: 0.8rem;
-}
-
-.popup-message {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #e50914;
-  color: #fff;
-  padding: 10px;
-  border-radius: 4px;
-  display: none;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); /* Added box shadow for better visibility */
-}
-
-.popup-message.active {
-  display: block;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-button.btn-link-signup{
-  background-color: #e50914;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
-  font-size: 1.2rem;
-  margin-top: 20px;
-}
-
-button.btn-link-signup:hover {
-  background-color: #b20710;
+.login-form .btn-link-signup {
+  padding: 0;
+  color: #0f766e;
+  background: transparent;
+  border: 0;
+  font-weight: 800;
 }

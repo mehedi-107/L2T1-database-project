@@ -3,7 +3,6 @@ import './WardHistory.css';
 import BedHistorCard from './BedHistoryCard';
 
 const WardHistory = ({ entry }) => {
-    console.log(entry);
 
     return (
         <div className="ward-history">

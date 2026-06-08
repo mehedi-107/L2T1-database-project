@@ -1,232 +1,178 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Signup.css';
 
+const initialForm = {
+  FIRST_NAME: '',
+  LAST_NAME: '',
+  EMAIL: '',
+  GENDER: '',
+  DATE_OF_BIRTH: '',
+  CONTACT_NO: '',
+  PASSWORD: '',
+};
+
 const Signup = () => {
-  const [FIRST_NAME, setFIRST_NAME] = useState('');
-  const [LAST_NAME, setLAST_NAME] = useState('');
-  const [EMAIL, setEMAIL] = useState('');
-  const [GENDER, setGENDER] = useState('');
-  const [DATE_OF_BIRTH, setDATE_OF_BIRTH] = useState('');
-  const [CONTACT_NO, setCONTACT_NO] = useState('');
-  const [PASSWORD, setPASSWORD] = useState('');
+  const [formData, setFormData] = useState(initialForm);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState('');
-  const [lastUserID, setLastUserID] = useState('');
-  const [fieldErrors, setFieldErrors] = useState({
-    FIRST_NAME: '',
-    LAST_NAME: '',
-    EMAIL: '',
-    GENDER: '',
-    DATE_OF_BIRTH: '',
-    CONTACT_NO: '',
-    PASSWORD: '',
-  });
+  const navigate = useNavigate();
 
-  const [popupActive, setPopupActive] = useState(false); // Added state for popup
-
-  const goToLogin = () => {
-    window.location.href = '/login';
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
+    setFieldErrors((current) => ({ ...current, [name]: '' }));
   };
 
-  const goBack = () => {
-    window.location.href = '/';
-  };
-
-  useEffect(() => {
-    const fetchLastUserID = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/lastUserID');
-        if (response.ok) {
-          const data = await response.json();
-          setLastUserID(data.max);
-        } else {
-          console.error('Failed to fetch last userID.');
-        }
-      } catch (error) {
-        console.error('Error occurred:', error);
-      }
-    };
-
-    fetchLastUserID();
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const validate = () => {
     const errors = {};
 
-    if (!FIRST_NAME) {
-      errors.FIRST_NAME = 'Please fill up this field.';
-    }
-    if (!LAST_NAME) {
-      errors.LAST_NAME = 'Please fill up this field.';
-    }
-    if (!EMAIL) {
-      errors.EMAIL = 'Please fill up this field.';
-    }
-    if (!GENDER) {
-      errors.GENDER = 'Please fill up this field.';
-    }
-    if (!DATE_OF_BIRTH) {
-      errors.DATE_OF_BIRTH = 'Please fill up this field.';
-    }
-    if (!CONTACT_NO) {
-      errors.CONTACT_NO = 'Please fill up this field.';
-    }
-    if (!PASSWORD) {
-      errors.PASSWORD = 'Please fill up this field.';
-    }
+    Object.entries(formData).forEach(([key, value]) => {
+      if (!value) {
+        errors[key] = 'Required';
+      }
+    });
 
+    return errors;
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+
+    const errors = validate();
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setError('Please fill in all fields.');
+      setError('Please complete all required fields.');
       return;
     }
 
-    setFieldErrors({});
-    setError('');
-
-    const userData = {
-      FIRST_NAME,
-      LAST_NAME,
-      EMAIL,
-      GENDER,
-      DATE_OF_BIRTH,
-      CONTACT_NO,
-      PASSWORD,
-    };
-
     try {
-      const response = await fetch('http://localhost:5000/signup', {
+      const response = await fetch('/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        console.log('User signed up successfully!');
-        goToLogin();
-      } else {
-        console.error('Sign up failed.');
+      if (!response.ok) {
+        throw new Error('Signup failed');
       }
+
+      navigate('/login');
     } catch (error) {
-      console.error('Error occurred:', error);
+      console.error('Signup failed:', error);
+      setError('Unable to create the patient account. Please try again.');
     }
   };
 
   return (
-    <div className="signup-container">
-      <div className="signup-content">
+    <main className="signup-page">
+      <section className="signup-panel" aria-labelledby="signup-heading">
+        <div className="signup-copy">
+          <p className="signup-eyebrow">Patient registration</p>
+          <h1 id="signup-heading">Create a Health Harbor account</h1>
+          <p>Register once, then use the patient portal for appointments and admission details.</p>
+        </div>
+
         <form onSubmit={handleSubmit} className="signup-form">
-          <h1>Sign Up</h1>
-
-          <div className="form-group error-popup">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="First Name"
-              value={FIRST_NAME}
-              onChange={(e) => setFIRST_NAME(e.target.value)}
-            />
-            {fieldErrors.FIRST_NAME && <p className="field-error">{fieldErrors.FIRST_NAME}</p>}
+          <div className="signup-grid">
+            <label>
+              <span>First name</span>
+              <input
+                type="text"
+                name="FIRST_NAME"
+                value={formData.FIRST_NAME}
+                onChange={handleChange}
+                className={fieldErrors.FIRST_NAME ? 'has-error' : ''}
+              />
+            </label>
+            <label>
+              <span>Last name</span>
+              <input
+                type="text"
+                name="LAST_NAME"
+                value={formData.LAST_NAME}
+                onChange={handleChange}
+                className={fieldErrors.LAST_NAME ? 'has-error' : ''}
+              />
+            </label>
           </div>
 
-          <div className="form-group error-popup">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Last Name"
-              value={LAST_NAME}
-              onChange={(e) => setLAST_NAME(e.target.value)}
-            />
-            {fieldErrors.LAST_NAME && <p className="field-error">{fieldErrors.LAST_NAME}</p>}
-          </div>
-
-          <div className="form-group error-popup">
+          <label>
+            <span>Email</span>
             <input
               type="email"
-              className="form-control"
-              placeholder="Email"
-              value={EMAIL}
-              onChange={(e) => setEMAIL(e.target.value)}
+              name="EMAIL"
+              value={formData.EMAIL}
+              onChange={handleChange}
+              className={fieldErrors.EMAIL ? 'has-error' : ''}
             />
-            {fieldErrors.EMAIL && <p className="field-error">{fieldErrors.EMAIL}</p>}
+          </label>
+
+          <div className="signup-grid">
+            <label>
+              <span>Gender</span>
+              <select
+                name="GENDER"
+                value={formData.GENDER}
+                onChange={handleChange}
+                className={fieldErrors.GENDER ? 'has-error' : ''}
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label>
+              <span>Date of birth</span>
+              <input
+                type="date"
+                name="DATE_OF_BIRTH"
+                value={formData.DATE_OF_BIRTH}
+                onChange={handleChange}
+                className={fieldErrors.DATE_OF_BIRTH ? 'has-error' : ''}
+              />
+            </label>
           </div>
 
-          <div className="form-group error-popup">
-            <select
-              className="form-control"
-              value={GENDER}
-              onChange={(e) => setGENDER(e.target.value)}
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-            {fieldErrors.GENDER && <p className="field-error">{fieldErrors.GENDER}</p>}
-          </div>
-
-          <div className="form-group error-popup">
-            <input
-              type="date"
-              className="form-control"
-              value={DATE_OF_BIRTH}
-              onChange={(e) => setDATE_OF_BIRTH(e.target.value)}
-            />
-            {fieldErrors.DATE_OF_BIRTH && <p className="field-error">{fieldErrors.DATE_OF_BIRTH}</p>}
-          </div>
-
-          <div className="form-group error-popup">
+          <label>
+            <span>Contact number</span>
             <input
               type="text"
-              className="form-control"
-              placeholder="Contact Number"
-              value={CONTACT_NO}
-              onChange={(e) => setCONTACT_NO(e.target.value)}
+              name="CONTACT_NO"
+              value={formData.CONTACT_NO}
+              onChange={handleChange}
+              className={fieldErrors.CONTACT_NO ? 'has-error' : ''}
             />
-            {fieldErrors.CONTACT_NO && <p className="field-error">{fieldErrors.CONTACT_NO}</p>}
-          </div>
+          </label>
 
-          <div className="form-group error-popup">
+          <label>
+            <span>Password</span>
             <input
               type="password"
-              className="form-control"
-              placeholder="Password"
-              value={PASSWORD}
-              onChange={(e) => setPASSWORD(e.target.value)}
+              name="PASSWORD"
+              value={formData.PASSWORD}
+              onChange={handleChange}
+              className={fieldErrors.PASSWORD ? 'has-error' : ''}
             />
-            {fieldErrors.PASSWORD && <p className="field-error">{fieldErrors.PASSWORD}</p>}
-          </div>
+          </label>
 
-          <button type="submit" className="btn-primary">
-            Sign Up
+          {error && <p className="signup-error">{error}</p>}
+
+          <button type="submit" className="signup-submit">
+            Create Account
           </button>
 
-          <p>
-            Already have an account?{' '}
-            <button type="button" className="btn btn-link" onClick={goToLogin}>
-              Login
-            </button>
-          </p>
-          <p>
-            <button type="button" className="btn btn-link" onClick={goBack}>
-              Back
-            </button>
-          </p>
-        </form>
-        {popupActive && (
-          <div className="popup-message">
-            <p>{error}</p>
-            <button type="button" onClick={() => setPopupActive(false)}>
-              Close
-            </button>
+          <div className="signup-links">
+            <Link to="/login">Already registered?</Link>
+            <Link to="/">Back to home</Link>
           </div>
-        )}
-      </div>
-    </div>
+        </form>
+      </section>
+    </main>
   );
 };
 

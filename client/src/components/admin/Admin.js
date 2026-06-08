@@ -9,7 +9,7 @@ import Notification from './Notification';
 import image1 from './logo2.png';
 import LeaveRequestList from './LeaveRequestList';
 import EmployeeManagement from './EmployeeManagement';
-const Admin = () => {
+const Admin = ({ onLogout }) => {
   const [showLeaveRequests, setShowLeaveRequests] = useState(false);
   const [showUpdateCabin, setShowUpdateCabin] = useState(false);
   const [showUpdateWard, setShowUpdateWard] = useState(false);
@@ -57,7 +57,7 @@ const Admin = () => {
           <img src={image1} alt="Health Harbor Logo" />
         </div>
         <nav>
-          <Link to="/">Logout</Link>
+          <Link to="/" onClick={onLogout}>Logout</Link>
           <button onClick={triggerNotification}>Show Notification</button>
         </nav>
       </header>

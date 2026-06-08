@@ -5,7 +5,6 @@ import OperationTheatreDuty from '../OperationTheatreDuty';
 import './TaskList.css';  
 const TaskList = (doctor) => {
   const [selectedOption, setSelectedOption] = useState('ward'); // Default option
-  console.log(doctor);
   const renderDuty = () => {
     switch (selectedOption) {
       case 'ward':
